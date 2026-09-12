@@ -29,6 +29,13 @@ import open3d as o3d
 import matplotlib.pyplot as plt
 from matplotlib.patches import Polygon as MplPolygon
 
+# Fixed seeds -- RANSAC plane fitting (floor/ceiling detection) is otherwise
+# non-deterministic run-to-run on the *same* input, which would fail the
+# case study's repeatability gate ("same room in, same plan out") even when
+# nothing about the capture changed.
+np.random.seed(0)
+o3d.utility.random.seed(0)
+
 from scan_io import (
     load_intrinsics, load_odometry, list_depth_frames, list_confidence_frames,
     load_depth_mm, load_confidence, pose_to_T, DEPTH_W, DEPTH_H,
@@ -146,23 +153,101 @@ def cv2_resize_nn(arr, w, h):
     return cv2.resize(arr, (w, h), interpolation=cv2.INTER_NEAREST)
 
 
+def _fit_horizontal_plane(pts: np.ndarray, mask: np.ndarray, distance_threshold: float = 0.03):
+    """RANSAC-fits a plane to pts[mask]. Returns (plane_y, normal_y, inlier_ratio,
+    n_inliers), or None if too few candidate points to attempt a fit."""
+    cand = pts[mask]
+    if len(cand) < 30:
+        return None
+    cpcd = o3d.geometry.PointCloud()
+    cpcd.points = o3d.utility.Vector3dVector(cand)
+    plane, inliers = cpcd.segment_plane(distance_threshold=distance_threshold,
+                                         ransac_n=3, num_iterations=1000)
+    a, b, c, _d = plane
+    normal = np.array([a, b, c])
+    normal /= np.linalg.norm(normal)
+    inlier_pts = cand[inliers]
+    plane_y = float(inlier_pts[:, 1].mean())
+    return plane_y, float(abs(normal[1])), len(inliers) / len(cand), len(inliers)
+
+
 def detect_floor_and_ceiling(pcd: o3d.geometry.PointCloud):
     """
-    ARKit world frame is y-up. Floor = plane of points with the lowest y values
-    that fits a near-horizontal plane; ceiling = highest such plane.
-    Returns (floor_y, ceiling_y, ceiling_height_m).
+    ARKit world frame is y-up.
+
+    Floor: a room's floor is walked over at close range on nearly every frame,
+    so it is by far the most heavily-sampled surface in the cloud -- a
+    histogram peak in the lower part of the y-range finds it reliably, refined
+    by a RANSAC plane fit on points near that peak.
+
+    Ceiling: captured far more sparsely (steep upward angle, longer range) with
+    NO equivalent density spike -- confirmed by inspecting the raw y-histograms
+    on real captures: floor shows one dominant bin, ceiling shows a smooth decay
+    to zero with no bump anywhere. A fixed percentile cut (e.g. y at the 98th
+    percentile) therefore lands inside the wall/furniture clutter band rather
+    than on the real ceiling, which is exactly why it under-reported ceiling
+    heights of 1.6-1.8m on rooms that turned out to have a real, cleanly
+    horizontal ceiling plane around 2.1-2.3m once isolated. Fix: search
+    progressively wider top-of-cloud slices, tightest first, and accept the
+    first slice whose RANSAC-fit plane is genuinely horizontal and has a high
+    inlier ratio. If no slice qualifies, the capture never got usable ceiling
+    coverage -- report a low-confidence fallback instead of a falsely precise
+    number (confidence_note downstream should reflect that).
+
+    Returns (floor_y, ceiling_y, ceiling_height_m, confidence in [0, 1]).
     """
     pts = np.asarray(pcd.points)
     y = pts[:, 1]
-    # Robust floor/ceiling estimate via percentiles first (fast, avoids full
-    # RANSAC needing a clean single-plane assumption on a messy real room).
-    floor_y = np.percentile(y, 2)
-    ceiling_y = np.percentile(y, 98)
+    lo, hi = float(y.min()), float(y.max())
+    span = hi - lo
+
+    # --- floor: densest horizontal plane in the lower 70% of the range ---
+    y_lower = y[y < lo + span * 0.7]
+    bins = np.arange(y_lower.min(), y_lower.max() + 0.02, 0.02)
+    hist, edges = np.histogram(y_lower, bins=bins)
+    peak_center = (edges[np.argmax(hist)] + edges[np.argmax(hist) + 1]) / 2
+    floor_fit = _fit_horizontal_plane(pts, np.abs(y - peak_center) < 0.06)
+    if floor_fit is None or floor_fit[1] < 0.85:
+        raise RuntimeError("Could not fit a floor plane -- check capture for floor coverage")
+    floor_y, _normal_y, floor_ratio, _n = floor_fit
+    floor_confidence = min(1.0, floor_ratio * 1.2)
+
+    # --- ceiling: tightest top-slice band that fits a clean horizontal plane ---
+    ceiling_y = None
+    ceiling_confidence = 0.0
+    for frac in (0.01, 0.02, 0.03, 0.05, 0.08, 0.12, 0.20, 0.30):
+        fit = _fit_horizontal_plane(pts, y > hi - span * frac)
+        if fit is None:
+            continue
+        plane_y, normal_y, ratio, n_inliers = fit
+        if normal_y > 0.85 and ratio > 0.5 and n_inliers >= 30:
+            ceiling_y, ceiling_confidence = plane_y, min(1.0, ratio)
+            break
+
+    if ceiling_y is None:
+        ceiling_y, ceiling_confidence = hi, 0.0
+        print("      WARNING: no reliable ceiling plane found at any search band -- "
+              "falling back to highest observed point, confidence=0. Capture likely "
+              "never tilted up enough to see the ceiling.")
+
     height = ceiling_y - floor_y
-    return floor_y, ceiling_y, height
+    confidence = min(floor_confidence, ceiling_confidence)
+    return floor_y, ceiling_y, height, confidence
 
 
-def radial_boundary(points_2d: np.ndarray, num_bins: int = 180):
+def _circular_median_filter(x: np.ndarray, window: int) -> np.ndarray:
+    """Median filter over a circular (wrap-around) sequence."""
+    n = len(x)
+    half = window // 2
+    out = np.empty_like(x)
+    for i in range(n):
+        idxs = [(i + k) % n for k in range(-half, half + 1)]
+        out[i] = np.median(x[idxs])
+    return out
+
+
+def radial_boundary(points_2d: np.ndarray, num_bins: int = 180,
+                     smooth_window: int = 7, spike_frac: float = 0.3):
     """
     Reconstructs a room's enclosing polygon from wall-surface points.
 
@@ -181,6 +266,16 @@ def radial_boundary(points_2d: np.ndarray, num_bins: int = 180):
     C-shaped floor plans where a ray from centroid crosses the boundary more
     than once -- note this as a known limitation, don't silently trust it on
     unusual layouts).
+
+    Post-process: rejects inward spikes. If the true wall was never sampled
+    along a given ray (occluded by furniture in the middle of the room), the
+    farthest point picked for that bin is the occluder, not the wall -- it
+    reads as a sharp inward notch. Confirmed visually: on a real capture, a
+    jagged intrusion toward the centroid lined up exactly with mid-room
+    furniture, not an actual room shape, and coincided with false opening
+    detections downstream (the same occlusion starves both signals). Real
+    walls are locally smooth, so a lone bin sitting well inside a smoothed
+    local-radius trend gets corrected to that trend instead of trusted as-is.
     """
     centroid = points_2d.mean(axis=0)
     rel = points_2d - centroid
@@ -205,7 +300,25 @@ def radial_boundary(points_2d: np.ndarray, num_bins: int = 180):
     if len(boundary) < 8:
         raise RuntimeError(f"Only {len(boundary)} boundary points recovered -- too sparse")
 
-    return np.array(boundary)
+    boundary = np.array(boundary)
+    b_rel = boundary - centroid
+    b_radius = np.linalg.norm(b_rel, axis=1)
+    b_angle = np.arctan2(b_rel[:, 1], b_rel[:, 0])
+
+    window = min(smooth_window, len(boundary) - (1 - len(boundary) % 2))
+    if window >= 3:
+        smoothed = _circular_median_filter(b_radius, window)
+        is_spike = b_radius < smoothed * (1 - spike_frac)
+        n_spikes = int(is_spike.sum())
+        if n_spikes:
+            print(f"      corrected {n_spikes}/{len(boundary)} inward spikes in "
+                  f"the wall footprint (likely furniture/clutter occluding the "
+                  f"true wall along that ray)")
+        corrected_radius = np.where(is_spike, smoothed, b_radius)
+        boundary = centroid + corrected_radius[:, None] * np.stack(
+            [np.cos(b_angle), np.sin(b_angle)], axis=1)
+
+    return boundary
 
 
 def extract_wall_footprint(pcd: o3d.geometry.PointCloud, floor_y: float, ceiling_y: float,
@@ -240,6 +353,106 @@ def extract_wall_footprint(pcd: o3d.geometry.PointCloud, floor_y: float, ceiling
         return wall_pts[hull.vertices]
 
 
+def detect_openings(pcd: o3d.geometry.PointCloud, polygon: np.ndarray,
+                     floor_y: float, ceiling_y: float, wall_thickness: float = 0.15,
+                     bin_size: float = 0.05, min_width: float = 0.4, max_width: float = 1.6):
+    """
+    Heuristic door/window detector (Round-1 scope): walks each wall segment and
+    looks for horizontal spans where vertical point coverage drops out in the
+    door/window band (roughly knee-to-head height) while the floor near that
+    span is still visible -- i.e. you can see past the wall into open space,
+    not just a wall stretch that happens to be under-sampled.
+
+    Known limitations:
+    - A genuinely unsampled wall stretch with no floor visibility either will
+      not be flagged -- this can silently miss openings from missing data.
+    - Furniture pressed against a wall (a couch back, a low cabinet) blocks
+      the same mid-height band a real opening would, and floor is still
+      visible in front of it -- this reads identically to an opening and WILL
+      produce false positives. No RGB/semantic check yet to tell the two
+      apart; treat opening_count as an upper bound pending that.
+    """
+    pts = np.asarray(pcd.points)
+    xz = pts[:, [0, 2]]
+    y = pts[:, 1]
+    height = ceiling_y - floor_y
+    mid_lo, mid_hi = floor_y + 0.4 * height, floor_y + 0.9 * height
+    floor_lo, floor_hi = floor_y, floor_y + 0.15
+
+    openings = []
+    n = len(polygon)
+    for wi in range(n):
+        p1, p2 = polygon[wi], polygon[(wi + 1) % n]
+        seg_len = float(np.linalg.norm(p2 - p1))
+        if seg_len < min_width:
+            continue
+        d_unit = (p2 - p1) / seg_len
+        normal = np.array([-d_unit[1], d_unit[0]])
+        rel = xz - p1
+        t = rel @ d_unit
+        perp = rel @ normal
+        near_wall = (np.abs(perp) < wall_thickness) & (t > 0) & (t < seg_len)
+        if not np.any(near_wall):
+            continue
+        t_wall, y_wall = t[near_wall], y[near_wall]
+
+        edges = np.arange(0, seg_len + bin_size, bin_size)
+        gap_mask = np.zeros(len(edges) - 1, dtype=bool)
+        for bi in range(len(edges) - 1):
+            in_bin = (t_wall >= edges[bi]) & (t_wall < edges[bi + 1])
+            if not np.any(in_bin):
+                continue  # no data at all -- can't tell gap from missing data
+            y_bin = y_wall[in_bin]
+            has_mid = np.any((y_bin > mid_lo) & (y_bin < mid_hi))
+            has_floor_nearby = np.any((y_bin > floor_lo) & (y_bin < floor_hi))
+            gap_mask[bi] = (not has_mid) and has_floor_nearby
+
+        bi = 0
+        while bi < len(gap_mask):
+            if not gap_mask[bi]:
+                bi += 1
+                continue
+            start = bi
+            while bi < len(gap_mask) and gap_mask[bi]:
+                bi += 1
+            width = (bi - start) * bin_size
+            if min_width <= width <= max_width:
+                center_xz = p1 + d_unit * (edges[start] + width / 2)
+                openings.append({
+                    "wall_index": wi,
+                    "position_xz": center_xz.tolist(),
+                    "width_m": round(float(width), 3),
+                })
+    return openings
+
+
+def compute_confidence_intervals(polygon: np.ndarray, perimeter: float,
+                                  base_uncertainty_m: float = 0.03):
+    """
+    Placeholder error model pending real calibration against laser ground
+    truth (Phase 6/7): treats each boundary point as independently uncertain by
+    `base_uncertainty_m` (a commonly-cited close-range phone-LiDAR depth noise
+    figure, not derived from this specific rig) and propagates it. This is
+    intentionally conservative-simple, not a measured error budget -- do not
+    quote these as calibrated until validated against ground truth.
+    """
+    wall_length_ci_m = round(float(np.sqrt(2) * base_uncertainty_m), 3)
+    area_ci_m2 = round(float(perimeter * base_uncertainty_m), 3)
+    return wall_length_ci_m, area_ci_m2
+
+
+def ceiling_height_ci_m(confidence: float) -> float:
+    """Confidence-tiered CI width -- high-confidence RANSAC plane fits get a
+    tight interval; the confidence=0 fallback (no ceiling plane found at any
+    search band) gets a deliberately wide one so it can't be mistaken for a
+    real measurement."""
+    if confidence >= 0.8:
+        return 0.02
+    if confidence >= 0.3:
+        return 0.10
+    return 0.50
+
+
 def polygon_metrics(polygon: np.ndarray):
     """Wall segment lengths (m) and enclosed floor area (m^2) via shoelace formula."""
     n = len(polygon)
@@ -270,11 +483,16 @@ def render_raw_scatter(pcd: o3d.geometry.PointCloud, out_path: str, title: str =
     plt.close(fig)
 
 
-def render_plan(polygon: np.ndarray, out_path: str, room_name: str = "room"):
+def render_plan(polygon: np.ndarray, out_path: str, room_name: str = "room", openings=None):
     fig, ax = plt.subplots(figsize=(6, 6))
     patch = MplPolygon(polygon, closed=True, fill=False, edgecolor="black", linewidth=2)
     ax.add_patch(patch)
     ax.scatter(polygon[:, 0], polygon[:, 1], c="red", s=15, zorder=5)
+    for op in (openings or []):
+        x, z = op["position_xz"]
+        ax.scatter([x], [z], c="blue", s=40, marker="s", zorder=6)
+        ax.annotate(f'{op["width_m"]:.2f}m', (x, z), textcoords="offset points",
+                    xytext=(4, 4), fontsize=7, color="blue")
     ax.set_aspect("equal")
     margin = 0.5
     ax.set_xlim(polygon[:, 0].min() - margin, polygon[:, 0].max() + margin)
@@ -302,47 +520,71 @@ def main():
     os.makedirs(args.out_dir, exist_ok=True)
     room_name = args.room_name or os.path.basename(os.path.normpath(args.scan_dir))
 
-    print("[1/5] Fusing point cloud...")
+    print("[1/6] Fusing point cloud...")
     pcd = build_fused_point_cloud(args.scan_dir, every_n=args.every_n,
                                    min_confidence=args.min_confidence)
     o3d.io.write_point_cloud(os.path.join(args.out_dir, "fused_cloud.ply"), pcd)
     print(f"      {len(pcd.points)} points after filtering/downsampling")
     render_raw_scatter(pcd, os.path.join(args.out_dir, "raw_scatter.png"), room_name)
 
-    print("[2/5] Detecting floor/ceiling...")
-    floor_y, ceiling_y, height = detect_floor_and_ceiling(pcd)
-    print(f"      floor_y={floor_y:.3f} ceiling_y={ceiling_y:.3f} height={height:.3f} m")
+    print("[2/6] Detecting floor/ceiling...")
+    floor_y, ceiling_y, height, height_confidence = detect_floor_and_ceiling(pcd)
+    print(f"      floor_y={floor_y:.3f} ceiling_y={ceiling_y:.3f} height={height:.3f} m "
+          f"confidence={height_confidence:.2f}")
 
-    print("[3/5] Extracting wall footprint...")
+    print("[3/6] Extracting wall footprint...")
     polygon = extract_wall_footprint(pcd, floor_y, ceiling_y, num_bins=args.bins)
 
-    print("[4/5] Computing dimensions...")
+    print("[4/6] Computing dimensions...")
     lengths, area = polygon_metrics(polygon)
+    perimeter = float(sum(lengths))
+    wall_length_ci_m, area_ci_m2 = compute_confidence_intervals(polygon, perimeter)
+    height_ci_m = ceiling_height_ci_m(height_confidence)
 
-    print("[5/5] Writing outputs...")
-    render_plan(polygon, os.path.join(args.out_dir, "room_plan.png"), room_name)
+    print("[5/6] Detecting openings...")
+    openings = detect_openings(pcd, polygon, floor_y, ceiling_y)
+    print(f"      {len(openings)} candidate opening(s) found")
+
+    print("[6/6] Writing outputs...")
+    render_plan(polygon, os.path.join(args.out_dir, "room_plan.png"), room_name, openings=openings)
 
     result = {
         "room_name": room_name,
         "source_scan": os.path.abspath(args.scan_dir),
         "tier": "lidar",
         "ceiling_height_m": round(height, 3),
+        "ceiling_height_confidence": round(height_confidence, 3),
+        "ceiling_height_ci_m": height_ci_m,
         "floor_area_m2": round(area, 3),
+        "floor_area_ci_m2": area_ci_m2,
         "wall_count": len(lengths),
         "wall_lengths_m": [round(l, 3) for l in lengths],
+        "wall_length_ci_m": wall_length_ci_m,
+        "openings": openings,
+        "opening_count": len(openings),
         "footprint_polygon_xz": polygon.tolist(),
         "confidence_note": (
             "radial-sweep footprint -- reconstructs the enclosing polygon from "
             "wall-surface points, correct for typical rectangular/L-shaped "
             "rooms. Assumes the room is star-shaped from its centroid; may "
-            "misbehave on deep narrow notches or C-shaped layouts. No opening "
-            "detection or confidence intervals yet -- next fix-loop candidates."
+            "misbehave on deep narrow notches or C-shaped layouts. Ceiling "
+            "height uses a tightest-band-first RANSAC plane search with an "
+            "honest confidence score (0 = no ceiling plane found, height is a "
+            "rough lower-bound fallback). Wall-length/area CIs are a "
+            "placeholder error model (fixed close-range depth-noise assumption), "
+            "not yet calibrated against ground truth. Opening detection is a "
+            "gap-in-coverage heuristic: can miss real openings on sparse data, "
+            "and can false-positive on furniture pressed against a wall (no "
+            "RGB/semantic check yet to tell the two apart) -- treat "
+            "opening_count as an upper bound."
         ),
     }
     with open(os.path.join(args.out_dir, "room.json"), "w") as f:
         json.dump(result, f, indent=2)
 
-    print(f"\nDone. Ceiling height: {height:.2f} m | Floor area: {area:.2f} m^2")
+    print(f"\nDone. Ceiling height: {height:.2f} m (+/-{height_ci_m:.2f}, "
+          f"confidence {height_confidence:.2f}) | Floor area: {area:.2f} m^2 "
+          f"(+/-{area_ci_m2:.2f}) | Openings: {len(openings)}")
     print(f"Outputs in {args.out_dir}/: room.json, room_plan.png, fused_cloud.ply")
 
 
