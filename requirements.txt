@@ -19,5 +19,7 @@ opencv-python-headless==5.0.0.93
 open3d==0.19.0
 pycolmap==4.2.0
 pillow==12.3.0
+pillow-heif==1.7.0
 torch==2.14.0
+transformers==5.17.0
 open_clip_torch==3.3.0
