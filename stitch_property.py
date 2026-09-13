@@ -299,27 +299,19 @@ def stitch(scan_dir, out_dir, apply_drift_correction=True, min_confidence=2, bin
     return property_json
 
 
-def main():
-    ap = argparse.ArgumentParser()
-    ap.add_argument("scan_dir")
-    ap.add_argument("out_dir")
-    ap.add_argument("--min-confidence", type=int, default=2)
-    ap.add_argument("--bins", type=int, default=180)
-    ap.add_argument("--every-n", type=int, default=5,
-                     help="Frame stride within each room's assigned frames (matches "
-                          "reconstruct_room.py's default) -- a dwelled-on room can collect "
-                          "thousands of frames, so this bounds fusion cost/memory the same "
-                          "way the single-room contract does.")
-    args = ap.parse_args()
-
+def stitch_with_ablation(scan_dir, out_dir, min_confidence=2, bins=180, every_n=5):
+    """Stitches scan_dir with AND without drift correction and writes
+    drift_ablation.json alongside both -- factored out of main() so other
+    entry points (cozmo.py) can call this without shelling out. Returns
+    (with_corr, without_corr) property dicts."""
     print("[1/2] Stitching WITH drift correction...")
-    with_corr = stitch(args.scan_dir, os.path.join(args.out_dir, "with_drift_correction"),
-                        apply_drift_correction=True, min_confidence=args.min_confidence,
-                        bins=args.bins, every_n=args.every_n)
+    with_corr = stitch(scan_dir, os.path.join(out_dir, "with_drift_correction"),
+                        apply_drift_correction=True, min_confidence=min_confidence,
+                        bins=bins, every_n=every_n)
     print("[2/2] Stitching WITHOUT drift correction (ablation)...")
-    without_corr = stitch(args.scan_dir, os.path.join(args.out_dir, "without_drift_correction"),
-                           apply_drift_correction=False, min_confidence=args.min_confidence,
-                           bins=args.bins, every_n=args.every_n)
+    without_corr = stitch(scan_dir, os.path.join(out_dir, "without_drift_correction"),
+                           apply_drift_correction=False, min_confidence=min_confidence,
+                           bins=bins, every_n=every_n)
 
     ablation = {
         "with_drift_correction": {
@@ -333,7 +325,7 @@ def main():
             "rooms": without_corr["rooms"],
         },
     }
-    with open(os.path.join(args.out_dir, "drift_ablation.json"), "w") as f:
+    with open(os.path.join(out_dir, "drift_ablation.json"), "w") as f:
         json.dump(ablation, f, indent=2)
 
     print(f"\nDone. Rooms found: {len(with_corr['rooms'])}")
@@ -341,8 +333,25 @@ def main():
           f"bbox={with_corr['bounding_box_xz']}")
     print(f"Without correction: total area={without_corr['total_floor_area_m2']} m^2, "
           f"bbox={without_corr['bounding_box_xz']}")
-    print(f"Outputs in {args.out_dir}/: with_drift_correction/, without_drift_correction/, "
+    print(f"Outputs in {out_dir}/: with_drift_correction/, without_drift_correction/, "
           f"drift_ablation.json")
+    return with_corr, without_corr
+
+
+def main():
+    ap = argparse.ArgumentParser()
+    ap.add_argument("scan_dir")
+    ap.add_argument("out_dir")
+    ap.add_argument("--min-confidence", type=int, default=2)
+    ap.add_argument("--bins", type=int, default=180)
+    ap.add_argument("--every-n", type=int, default=5,
+                     help="Frame stride within each room's assigned frames (matches "
+                          "reconstruct_room.py's default) -- a dwelled-on room can collect "
+                          "thousands of frames, so this bounds fusion cost/memory the same "
+                          "way the single-room contract does.")
+    args = ap.parse_args()
+    stitch_with_ablation(args.scan_dir, args.out_dir, min_confidence=args.min_confidence,
+                          bins=args.bins, every_n=args.every_n)
 
 
 if __name__ == "__main__":

@@ -553,27 +553,20 @@ def render_plan(polygon: np.ndarray, out_path: str, room_name: str = "room", ope
     plt.close(fig)
 
 
-def main():
-    ap = argparse.ArgumentParser()
-    ap.add_argument("scan_dir")
-    ap.add_argument("out_dir")
-    ap.add_argument("--every-n", type=int, default=5)
-    ap.add_argument("--min-confidence", type=int, default=2)
-    ap.add_argument("--bins", type=int, default=180,
-                     help="Number of angular bins for radial boundary sweep. "
-                          "More bins = finer detail but needs denser points; try 120-360.")
-    ap.add_argument("--room-name", default=None)
-    args = ap.parse_args()
-
-    os.makedirs(args.out_dir, exist_ok=True)
-    room_name = args.room_name or os.path.basename(os.path.normpath(args.scan_dir))
+def reconstruct_room(scan_dir: str, out_dir: str, every_n: int = 5, min_confidence: int = 2,
+                      bins: int = 180, room_name: str = None) -> dict:
+    """Runs the full single-room LiDAR-tier contract end to end and writes
+    room.json/room_plan.png/fused_cloud.ply to out_dir. Returns the same dict
+    written to room.json -- factored out of main() so other entry points
+    (cozmo.py, stitch_property.py) can call this without shelling out."""
+    os.makedirs(out_dir, exist_ok=True)
+    room_name = room_name or os.path.basename(os.path.normpath(scan_dir))
 
     print("[1/6] Fusing point cloud...")
-    pcd = build_fused_point_cloud(args.scan_dir, every_n=args.every_n,
-                                   min_confidence=args.min_confidence)
-    o3d.io.write_point_cloud(os.path.join(args.out_dir, "fused_cloud.ply"), pcd)
+    pcd = build_fused_point_cloud(scan_dir, every_n=every_n, min_confidence=min_confidence)
+    o3d.io.write_point_cloud(os.path.join(out_dir, "fused_cloud.ply"), pcd)
     print(f"      {len(pcd.points)} points after filtering/downsampling")
-    render_raw_scatter(pcd, os.path.join(args.out_dir, "raw_scatter.png"), room_name)
+    render_raw_scatter(pcd, os.path.join(out_dir, "raw_scatter.png"), room_name)
 
     print("[2/6] Detecting floor/ceiling...")
     floor_y, ceiling_y, height, height_confidence = detect_floor_and_ceiling(pcd)
@@ -581,7 +574,7 @@ def main():
           f"confidence={height_confidence:.2f}")
 
     print("[3/6] Extracting wall footprint...")
-    polygon = extract_wall_footprint(pcd, floor_y, ceiling_y, num_bins=args.bins)
+    polygon = extract_wall_footprint(pcd, floor_y, ceiling_y, num_bins=bins)
 
     print("[4/6] Computing dimensions...")
     lengths, area = polygon_metrics(polygon)
@@ -594,11 +587,11 @@ def main():
     print(f"      {len(openings)} candidate opening(s) found")
 
     print("[6/6] Writing outputs...")
-    render_plan(polygon, os.path.join(args.out_dir, "room_plan.png"), room_name, openings=openings)
+    render_plan(polygon, os.path.join(out_dir, "room_plan.png"), room_name, openings=openings)
 
     result = {
         "room_name": room_name,
-        "source_scan": os.path.abspath(args.scan_dir),
+        "source_scan": os.path.abspath(scan_dir),
         "tier": "lidar",
         "ceiling_height_m": round(height, 3),
         "ceiling_height_confidence": round(height_confidence, 3),
@@ -627,13 +620,30 @@ def main():
             "opening_count as an upper bound."
         ),
     }
-    with open(os.path.join(args.out_dir, "room.json"), "w") as f:
+    with open(os.path.join(out_dir, "room.json"), "w") as f:
         json.dump(result, f, indent=2)
 
     print(f"\nDone. Ceiling height: {height:.2f} m (+/-{height_ci_m:.2f}, "
           f"confidence {height_confidence:.2f}) | Floor area: {area:.2f} m^2 "
           f"(+/-{area_ci_m2:.2f}) | Openings: {len(openings)}")
-    print(f"Outputs in {args.out_dir}/: room.json, room_plan.png, fused_cloud.ply")
+    print(f"Outputs in {out_dir}/: room.json, room_plan.png, fused_cloud.ply")
+    return result
+
+
+def main():
+    ap = argparse.ArgumentParser()
+    ap.add_argument("scan_dir")
+    ap.add_argument("out_dir")
+    ap.add_argument("--every-n", type=int, default=5)
+    ap.add_argument("--min-confidence", type=int, default=2)
+    ap.add_argument("--bins", type=int, default=180,
+                     help="Number of angular bins for radial boundary sweep. "
+                          "More bins = finer detail but needs denser points; try 120-360.")
+    ap.add_argument("--room-name", default=None)
+    args = ap.parse_args()
+    reconstruct_room(args.scan_dir, args.out_dir, every_n=args.every_n,
+                      min_confidence=args.min_confidence, bins=args.bins,
+                      room_name=args.room_name)
 
 
 if __name__ == "__main__":

@@ -494,31 +494,22 @@ def ceiling_height_ci_m_photo(confidence: float, mean_inlier_ratio: float) -> fl
     return round(base * registration_penalty, 3)
 
 
-def main():
-    ap = argparse.ArgumentParser()
-    ap.add_argument("room_dir", help="Folder of 2-8 photos for one room")
-    ap.add_argument("out_dir")
-    ap.add_argument("--room-name", default=None)
-    ap.add_argument("--stride", type=int, default=4,
-                     help="Pixel stride for dense back-projection (floor/ceiling/footprint). "
-                          "Lower = denser cloud, slower.")
-    ap.add_argument("--bins", type=int, default=60,
-                     help="Angular bins for the radial wall-footprint sweep. Photo tier "
-                          "defaults much lower than LiDAR's 180 -- far fewer points to "
-                          "support fine angular resolution.")
-    ap.add_argument("--device", default=None, help="mps|cuda|cpu, auto-detected if omitted")
-    args = ap.parse_args()
-
-    os.makedirs(args.out_dir, exist_ok=True)
-    room_name = args.room_name or os.path.basename(os.path.normpath(args.room_dir))
+def reconstruct_room_photo(room_dir: str, out_dir: str, room_name: str = None,
+                            stride: int = 4, bins: int = 60, device: str = None) -> dict:
+    """Runs the full single-room photo-tier contract end to end and writes
+    room.json/room_plan.png/fused_cloud.ply to out_dir. Returns the same dict
+    written to room.json -- factored out of main() so other entry points
+    (cozmo.py) can call this without shelling out."""
+    os.makedirs(out_dir, exist_ok=True)
+    room_name = room_name or os.path.basename(os.path.normpath(room_dir))
 
     print("[1/6] Estimating depth + registering photos...")
     pcd, mean_inlier_ratio, n_used, n_total = build_fused_point_cloud_photo(
-        args.room_dir, stride=args.stride, device=args.device)
-    o3d.io.write_point_cloud(os.path.join(args.out_dir, "fused_cloud.ply"), pcd)
+        room_dir, stride=stride, device=device)
+    o3d.io.write_point_cloud(os.path.join(out_dir, "fused_cloud.ply"), pcd)
     print(f"      {len(pcd.points)} points after filtering/downsampling, "
           f"{n_used}/{n_total} photos chained, mean inlier ratio {mean_inlier_ratio:.2f}")
-    rr.render_raw_scatter(pcd, os.path.join(args.out_dir, "raw_scatter.png"), room_name)
+    rr.render_raw_scatter(pcd, os.path.join(out_dir, "raw_scatter.png"), room_name)
 
     print("[2/6] Detecting floor/ceiling...")
     floor_y, ceiling_y, height, height_confidence = detect_floor_and_ceiling_photo(pcd)
@@ -526,7 +517,7 @@ def main():
           f"confidence={height_confidence:.2f}")
 
     print("[3/6] Extracting wall footprint...")
-    polygon = rr.extract_wall_footprint(pcd, floor_y, ceiling_y, num_bins=args.bins)
+    polygon = rr.extract_wall_footprint(pcd, floor_y, ceiling_y, num_bins=bins)
 
     print("[4/6] Computing dimensions...")
     lengths, area = rr.polygon_metrics(polygon)
@@ -540,11 +531,11 @@ def main():
     print(f"      {len(openings)} candidate opening(s) found")
 
     print("[6/6] Writing outputs...")
-    rr.render_plan(polygon, os.path.join(args.out_dir, "room_plan.png"), room_name, openings=openings)
+    rr.render_plan(polygon, os.path.join(out_dir, "room_plan.png"), room_name, openings=openings)
 
     result = {
         "room_name": room_name,
-        "source_scan": os.path.abspath(args.room_dir),
+        "source_scan": os.path.abspath(room_dir),
         "tier": "photo",
         "ceiling_height_m": round(height, 3),
         "ceiling_height_confidence": round(height_confidence, 3),
@@ -581,14 +572,33 @@ def main():
             f"less reliable here than on the LiDAR tier."
         ),
     }
-    with open(os.path.join(args.out_dir, "room.json"), "w") as f:
+    with open(os.path.join(out_dir, "room.json"), "w") as f:
         json.dump(result, f, indent=2)
 
     print(f"\nDone. Ceiling height: {height:.2f} m (+/-{height_ci_m:.2f}, "
           f"confidence {height_confidence:.2f}) | Floor area: {area:.2f} m^2 "
           f"(+/-{area_ci_m2:.2f}) | Openings: {len(openings)} | "
           f"Photos used: {n_used}/{n_total}")
-    print(f"Outputs in {args.out_dir}/: room.json, room_plan.png, fused_cloud.ply")
+    print(f"Outputs in {out_dir}/: room.json, room_plan.png, fused_cloud.ply")
+    return result
+
+
+def main():
+    ap = argparse.ArgumentParser()
+    ap.add_argument("room_dir", help="Folder of 2-8 photos for one room")
+    ap.add_argument("out_dir")
+    ap.add_argument("--room-name", default=None)
+    ap.add_argument("--stride", type=int, default=4,
+                     help="Pixel stride for dense back-projection (floor/ceiling/footprint). "
+                          "Lower = denser cloud, slower.")
+    ap.add_argument("--bins", type=int, default=60,
+                     help="Angular bins for the radial wall-footprint sweep. Photo tier "
+                          "defaults much lower than LiDAR's 180 -- far fewer points to "
+                          "support fine angular resolution.")
+    ap.add_argument("--device", default=None, help="mps|cuda|cpu, auto-detected if omitted")
+    args = ap.parse_args()
+    reconstruct_room_photo(args.room_dir, args.out_dir, room_name=args.room_name,
+                            stride=args.stride, bins=args.bins, device=args.device)
 
 
 if __name__ == "__main__":
