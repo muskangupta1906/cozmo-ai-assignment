@@ -47,98 +47,7 @@
     ]
   },
   {
-    "cluster_id": 127,
-    "predicted_class": "scuff or scratch mark",
-    "confidence": 0.502,
-    "view_count": 7,
-    "surface_type": "floor",
-    "world_xyz": [
-      -2.134313004357474,
-      -1.4669245992388045,
-      2.955184425626482
-    ],
-    "members": [
-      {
-        "frame_index": 645,
-        "bbox_px": [
-          704,
-          821,
-          42,
-          139
-        ],
-        "predicted_class": "scuff or scratch mark",
-        "confidence": 0.481
-      },
-      {
-        "frame_index": 690,
-        "bbox_px": [
-          901,
-          337,
-          23,
-          202
-        ],
-        "predicted_class": "scuff or scratch mark",
-        "confidence": 0.454
-      },
-      {
-        "frame_index": 705,
-        "bbox_px": [
-          1070,
-          141,
-          6,
-          309
-        ],
-        "predicted_class": "scuff or scratch mark",
-        "confidence": 0.443
-      },
-      {
-        "frame_index": 720,
-        "bbox_px": [
-          1104,
-          88,
-          7,
-          376
-        ],
-        "predicted_class": "scuff or scratch mark",
-        "confidence": 0.45
-      },
-      {
-        "frame_index": 750,
-        "bbox_px": [
-          1380,
-          168,
-          43,
-          531
-        ],
-        "predicted_class": "scuff or scratch mark",
-        "confidence": 0.588
-      },
-      {
-        "frame_index": 765,
-        "bbox_px": [
-          1514,
-          73,
-          91,
-          532
-        ],
-        "predicted_class": "scuff or scratch mark",
-        "confidence": 0.503
-      },
-      {
-        "frame_index": 780,
-        "bbox_px": [
-          1674,
-          8,
-          96,
-          477
-        ],
-        "predicted_class": "scuff or scratch mark",
-        "confidence": 0.595
-      }
-    ]
-  },
-  {
-    "cluster_id": 150,
+    "cluster_id": 135,
     "predicted_class": "scuff or scratch mark",
     "confidence": 0.516,
     "view_count": 2,
@@ -174,166 +83,45 @@
     ]
   },
   {
-    "cluster_id": 173,
+    "cluster_id": 154,
     "predicted_class": "scuff or scratch mark",
-    "confidence": 0.502,
-    "view_count": 10,
-    "surface_type": "floor",
+    "confidence": 0.518,
+    "view_count": 2,
+    "surface_type": "wall",
     "world_xyz": [
-      0.3113933973587476,
-      -1.5071506591943593,
-      4.954854304973896
+      0.8910679817199707,
+      -1.2492642402648926,
+      4.2893829345703125
     ],
     "members": [
       {
-        "frame_index": 945,
+        "frame_index": 930,
         "bbox_px": [
-          1126,
-          863,
-          22,
-          34
-        ],
-        "predicted_class": "scuff or scratch mark",
-        "confidence": 0.339
-      },
-      {
-        "frame_index": 960,
-        "bbox_px": [
-          1157,
-          893,
-          20,
-          44
-        ],
-        "predicted_class": "scuff or scratch mark",
-        "confidence": 0.334
-      },
-      {
-        "frame_index": 975,
-        "bbox_px": [
-          1227,
-          837,
-          26,
-          83
-        ],
-        "predicted_class": "scuff or scratch mark",
-        "confidence": 0.444
-      },
-      {
-        "frame_index": 990,
-        "bbox_px": [
-          1206,
-          645,
-          63,
-          158
-        ],
-        "predicted_class": "scuff or scratch mark",
-        "confidence": 0.529
-      },
-      {
-        "frame_index": 1005,
-        "bbox_px": [
-          1186,
-          548,
+          960,
+          1140,
           51,
-          112
+          263
         ],
         "predicted_class": "scuff or scratch mark",
-        "confidence": 0.581
+        "confidence": 0.448
       },
       {
-        "frame_index": 1005,
+        "frame_index": 1080,
         "bbox_px": [
-          1218,
-          666,
-          40,
-          69
+          1290,
+          15,
+          121,
+          312
         ],
         "predicted_class": "scuff or scratch mark",
-        "confidence": 0.746
-      },
-      {
-        "frame_index": 1020,
-        "bbox_px": [
-          1214,
-          390,
-          78,
-          222
-        ],
-        "predicted_class": "scuff or scratch mark",
-        "confidence": 0.527
-      },
-      {
-        "frame_index": 1035,
-        "bbox_px": [
-          1310,
-          189,
-          49,
-          122
-        ],
-        "predicted_class": "scuff or scratch mark",
-        "confidence": 0.675
-      },
-      {
-        "frame_index": 1050,
-        "bbox_px": [
-          1403,
-          8,
-          138,
-          210
-        ],
-        "predicted_class": "crack",
-        "confidence": 0.405
-      },
-      {
-        "frame_index": 1170,
-        "bbox_px": [
-          1777,
-          245,
-          143,
-          170
-        ],
-        "predicted_class": "scuff or scratch mark",
-        "confidence": 0.411
-      },
-      {
-        "frame_index": 1170,
-        "bbox_px": [
-          1872,
-          303,
-          30,
-          25
-        ],
-        "predicted_class": "scuff or scratch mark",
-        "confidence": 0.322
-      },
-      {
-        "frame_index": 1185,
-        "bbox_px": [
-          1775,
-          1276,
-          145,
-          124
-        ],
-        "predicted_class": "scuff or scratch mark",
-        "confidence": 0.614
-      },
-      {
-        "frame_index": 1185,
-        "bbox_px": [
-          1886,
-          1324,
-          34,
-          19
-        ],
-        "predicted_class": "clean undamaged surface",
-        "confidence": 0.308
+        "confidence": 0.587
       }
     ]
   },
   {
-    "cluster_id": 186,
+    "cluster_id": 168,
     "predicted_class": "scuff or scratch mark",
-    "confidence": 0.521,
+    "confidence": 0.519,
     "view_count": 3,
     "surface_type": "wall",
     "world_xyz": [
@@ -345,13 +133,13 @@
       {
         "frame_index": 1050,
         "bbox_px": [
-          1363,
-          773,
-          33,
-          223
+          1364,
+          780,
+          32,
+          216
         ],
         "predicted_class": "scuff or scratch mark",
-        "confidence": 0.508
+        "confidence": 0.503
       },
       {
         "frame_index": 1095,
@@ -378,7 +166,7 @@
     ]
   },
   {
-    "cluster_id": 282,
+    "cluster_id": 258,
     "predicted_class": "scuff or scratch mark",
     "confidence": 0.509,
     "view_count": 2,
@@ -410,42 +198,6 @@
         ],
         "predicted_class": "scuff or scratch mark",
         "confidence": 0.465
-      }
-    ]
-  },
-  {
-    "cluster_id": 311,
-    "predicted_class": "scuff or scratch mark",
-    "confidence": 0.511,
-    "view_count": 2,
-    "surface_type": "floor",
-    "world_xyz": [
-      -6.43160605430603,
-      -1.4785640239715576,
-      1.1044073700904846
-    ],
-    "members": [
-      {
-        "frame_index": 1560,
-        "bbox_px": [
-          443,
-          330,
-          10,
-          255
-        ],
-        "predicted_class": "scuff or scratch mark",
-        "confidence": 0.501
-      },
-      {
-        "frame_index": 1575,
-        "bbox_px": [
-          420,
-          8,
-          54,
-          285
-        ],
-        "predicted_class": "scuff or scratch mark",
-        "confidence": 0.52
       }
     ]
   }

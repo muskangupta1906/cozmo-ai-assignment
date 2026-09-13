@@ -1,42 +1,50 @@
 """
 damage_detection/detect_damage.py
 ----------------------------------
-Phase 5, second increment: per-frame region proposal + a multi-view
-consistency prefilter, THEN pretrained zero-shot classification. Metric
-extent, surface (wall-index) assignment, concealed-damage rules, and scope
-line items are still not built -- see PHASE_PLAN.md Phase 5 for the full
-planned pipeline.
+Phase 5, third increment: per-frame region proposal, a geometric-edge
+exclusion filter, a multi-view consistency prefilter, THEN pretrained
+zero-shot classification. Metric extent, surface (wall-index) assignment,
+concealed-damage rules, and scope line items are still not built -- see
+PHASE_PLAN.md Phase 5 for the full planned pipeline.
 
-Three passes over the sampled frames:
-  1. propose_all_candidates: for every frame, back-project depth to world
+Four stages over the sampled frames:
+  1. propose_frame_candidates: for every frame, back-project depth to world
      points (reusing reconstruct_room.backproject_frame), mask to pixels
      near the room's known floor/wall/ceiling planes, and find color-
      anomalous regions against a blurred local background (classical CV,
-     no model). Each candidate's world-space centroid is computed here --
-     classification is deliberately NOT run yet.
-  2. cluster_and_filter: DBSCAN-clusters all candidates' world centroids
-     across every sampled frame, then keeps only clusters seen from
-     >= --min-views DISTINCT frames. This is a real, load-bearing filter
-     for one specific failure mode -- a one-off artifact (motion blur,
-     a stray reflection, a sensor glitch) that only trips the detector in
-     a single frame gets dropped. It is explicitly NOT a fix for the
-     other failure mode found during manual crop review: floor-wall
-     corner shadows and floor plank/grout seams are real, fixed, repeated
-     geometric features, so they get seen from just as many distinct
-     frames as genuine damage would and survive this filter too. See
-     PHASE_PLAN.md's Phase 5 note on the crop-review finding -- fixing
-     that specifically needs geometric-edge exclusion or illumination
-     normalization, not multi-view consistency, and is not done here.
-  3. Only surviving (multi-view-consistent) candidates get classified with
-     CLIP (open_clip, ViT-B-32-quickgelu/openai weights -- disclosed
-     pretrained-model use, no fine-tuning). Classifying only survivors
-     also cuts CLIP calls roughly in proportion to how much the prefilter
-     rejects, which matters since it's the slowest step per candidate.
-     Surviving clusters are classified per-member (one CLIP call per view)
-     and merged into one detection per cluster via majority vote on class
-     + mean confidence over agreeing members -- this is real dedup, a
-     piece of the previously-deferred 3D-clustering step pulled forward
-     because clustering was already needed for the view-count filter.
+     no model) -- candidate damage blobs.
+  2. Geometric-edge exclusion (local_plane_residual, same stage as #1):
+     fits a single plane to each candidate's local 3D neighborhood and
+     rejects it if the fit residual is too high. A real floor-wall/wall-
+     wall/wall-ceiling corner spans two different surface orientations
+     over even a small region, so no single plane fits it well; a color/
+     texture anomaly sitting entirely within one flat surface (a seam, a
+     stain, real damage) stays coplanar. Added specifically to address a
+     manual-crop-review finding (see PHASE_PLAN.md): floor-wall/wall
+     corner shadows were a major false-positive source. Deliberately
+     limited: this can only ever catch plane-intersection corners, NOT
+     flat-surface color anomalies like floor plank/grout seams -- those
+     stay geometrically flat regardless of how "damage-like" they look,
+     so they are NOT expected to be caught by this stage. Verify against
+     real crops after running, don't assume from the residual numbers
+     alone -- see PHASE_PLAN.md for what was actually confirmed.
+  3. cluster_and_filter: DBSCAN-clusters surviving candidates' world
+     centroids across every sampled frame, then keeps only clusters seen
+     from >= --min-views DISTINCT frames. This is a real, load-bearing
+     filter for a *different* failure mode than #2 -- a one-off artifact
+     (motion blur, a stray reflection, a sensor glitch) that only trips
+     the detector in a single frame gets dropped. It does NOT catch fixed,
+     repeated geometric features (that's #2's job) -- confirmed by an
+     earlier run where only ~18% of candidates were single-view.
+  4. Only surviving candidates get classified with CLIP (open_clip,
+     ViT-B-32-quickgelu/openai weights -- disclosed pretrained-model use,
+     no fine-tuning). Classifying only survivors also cuts CLIP calls
+     roughly in proportion to how much stages 2+3 reject. Surviving
+     clusters are classified per-member (one CLIP call per view) and
+     merged into one detection per cluster via majority vote on class +
+     mean confidence over agreeing members -- real dedup, a piece of the
+     previously-deferred 3D-clustering step pulled forward because
+     clustering was already needed for the view-count filter.
 
 Output (in out_dir):
   - damage_detections.json: one entry per surviving, classified cluster
@@ -52,9 +60,11 @@ Known limitations, honestly not fixed here (see also PHASE_PLAN.md):
   - DAMAGE_CLASSES below is a generic placeholder set, not matched to
     whatever ends up staged in the Phase 6 damage room.
   - No ground truth exists yet to validate accuracy against.
-  - Corner-shadow / grout-seam false positives (found via manual crop
-    review on an earlier run) are NOT fixed by this increment -- see the
-    module docstring above and PHASE_PLAN.md.
+  - Flat-surface false positives (floor plank/grout seams, confirmed via
+    manual crop review) are NOT fixed by geometric-edge exclusion -- by
+    construction, that stage can only reject plane-intersection corners.
+    Illumination-normalized region proposal is the next candidate fix for
+    the flat-surface case, not yet implemented.
   - Candidates with no recoverable world position (no depth at their
     pixel location) are dropped entirely during clustering, since view-
     count consistency can't be checked without a location -- they never
@@ -62,7 +72,8 @@ Known limitations, honestly not fixed here (see also PHASE_PLAN.md):
 
 Usage:
     python damage_detection/detect_damage.py <scan_dir> <out_dir> \\
-        [--every-n 15] [--conf-threshold 0.5] [--min-views 2] [--cluster-eps 0.1]
+        [--every-n 15] [--conf-threshold 0.5] [--min-views 2] [--cluster-eps 0.1] \\
+        [--edge-residual-threshold-m 0.02]
 """
 
 import os
@@ -200,13 +211,39 @@ def propose_candidate_regions(rgb: np.ndarray, surface_mask: np.ndarray,
     return boxes
 
 
+def local_plane_residual(world_img: np.ndarray, dr0: int, dr1: int, dc0: int, dc1: int,
+                          min_points: int = 8):
+    """
+    Fits a single plane (via the smallest eigenvalue of the centered
+    covariance matrix) to the valid 3D points in world_img[dr0:dr1, dc0:dc1]
+    and returns its RMS out-of-plane residual, or None if too few valid
+    points to judge. A real plane-to-plane corner (floor-wall, wall-wall,
+    wall-ceiling) spans two different surface orientations over even a
+    small region, so no single plane fits it well -- high residual. A
+    color/texture anomaly sitting entirely within one flat surface (a
+    seam, a stain, real damage) stays coplanar -- low residual. This is
+    what distinguishes "real geometric edge" from "flat-surface anomaly";
+    it can only catch the former (see module docstring on grout seams).
+    """
+    region = world_img[dr0:dr1, dc0:dc1].reshape(-1, 3)
+    region = region[~np.isnan(region).any(axis=1)]
+    if len(region) < min_points:
+        return None
+    centered = region - region.mean(axis=0)
+    cov = (centered.T @ centered) / len(centered)
+    eigvals = np.linalg.eigvalsh(cov)  # ascending; smallest = out-of-plane variance
+    return float(np.sqrt(max(eigvals[0], 0.0)))
+
+
 def propose_frame_candidates(rgb: np.ndarray, depth_mm: np.ndarray, conf: np.ndarray, row,
                               fx_d, fy_d, cx_d, cy_d, us, vs, min_confidence,
-                              floor_y, ceiling_y, polygon):
+                              floor_y, ceiling_y, polygon,
+                              edge_residual_threshold_m: float = 0.02):
     """
-    Pass 1 for one frame: region proposal + world-centroid lookup, no
-    classification. Returns a list of raw candidate dicts (no
-    predicted_class/confidence yet).
+    Pass 1 for one frame: region proposal + geometric-edge exclusion +
+    world-centroid lookup, no classification yet. Returns
+    (candidates, n_dropped_geometric_edge); candidates have no
+    predicted_class/confidence yet.
     """
     depth_h, depth_w = depth_mm.shape
     rgb_h, rgb_w = rgb.shape[:2]
@@ -214,7 +251,7 @@ def propose_frame_candidates(rgb: np.ndarray, depth_mm: np.ndarray, conf: np.nda
     pts_world, valid = rr.backproject_frame(depth_mm, conf, row, fx_d, fy_d, cx_d, cy_d,
                                              us, vs, min_confidence)
     if pts_world is None or not np.any(valid):
-        return []
+        return [], 0
 
     labels = classify_surface(pts_world, floor_y, ceiling_y, polygon)
     ys, xs = np.where(valid)  # (row, col) per pts_world entry, same order (row-major)
@@ -231,11 +268,19 @@ def propose_frame_candidates(rgb: np.ndarray, depth_mm: np.ndarray, conf: np.nda
 
     boxes = propose_candidate_regions(rgb, surface_mask_rgb)
     if not boxes:
-        return []
+        return [], 0
 
     scale_x, scale_y = depth_w / rgb_w, depth_h / rgb_h
     candidates = []
+    n_dropped_edge = 0
     for (x, y, w, h) in boxes:
+        dr0, dc0 = int(y * scale_y), int(x * scale_x)
+        dr1, dc1 = int(np.ceil((y + h) * scale_y)) + 1, int(np.ceil((x + w) * scale_x)) + 1
+        residual = local_plane_residual(world_img, dr0, dr1, dc0, dc1)
+        if residual is not None and residual > edge_residual_threshold_m:
+            n_dropped_edge += 1
+            continue
+
         cx_rgb, cy_rgb = x + w / 2.0, y + h / 2.0
         dr, dc = int(round(cy_rgb * scale_y)), int(round(cx_rgb * scale_x))
         win = world_img[max(0, dr - 2):dr + 3, max(0, dc - 2):dc + 3].reshape(-1, 3)
@@ -249,8 +294,9 @@ def propose_frame_candidates(rgb: np.ndarray, depth_mm: np.ndarray, conf: np.nda
             "bbox_px": [int(x), int(y), int(w), int(h)],
             "surface_type": str(surface_type),
             "world_xyz": world_xyz,
+            "plane_residual_m": round(residual, 4) if residual is not None else None,
         })
-    return candidates
+    return candidates, n_dropped_edge
 
 
 def cluster_and_filter(candidates: list, eps: float = 0.1, min_views: int = 2):
@@ -368,7 +414,8 @@ def read_rgb_frames_sequential(video_path: str, wanted_indices: set):
 
 
 def run(scan_dir: str, out_dir: str, every_n: int = 15, conf_threshold: float = 0.5,
-        min_confidence: int = 2, min_views: int = 2, cluster_eps: float = 0.1):
+        min_confidence: int = 2, min_views: int = 2, cluster_eps: float = 0.1,
+        edge_residual_threshold_m: float = 0.02):
     os.makedirs(out_dir, exist_ok=True)
 
     print("[1/5] Computing room geometry (floor/ceiling/footprint)...")
@@ -394,9 +441,10 @@ def run(scan_dir: str, out_dir: str, every_n: int = 15, conf_threshold: float = 
     frame_indices = list(range(0, n, every_n))
     video_path = os.path.join(scan_dir, "rgb.mp4")
 
-    print(f"[2/5] Pass 1/3: proposing candidate regions across {len(frame_indices)} frames "
-          f"(no classification yet)...")
+    print(f"[2/5] Pass 1/3: proposing candidate regions across {len(frame_indices)} frames, "
+          f"excluding geometric plane-intersection edges (residual > {edge_residual_threshold_m}m)...")
     raw_candidates = []
+    n_dropped_edge_total = 0
     for idx, rgb in read_rgb_frames_sequential(video_path, set(frame_indices)):
         if rgb.shape[:2] != (rgb_h, rgb_w):
             rgb = cv2.resize(rgb, (rgb_w, rgb_h))
@@ -407,12 +455,15 @@ def run(scan_dir: str, out_dir: str, every_n: int = 15, conf_threshold: float = 
             conf = rr.cv2_resize_nn(conf, depth_w, depth_h)
         row = odo.iloc[idx]
 
-        cands = propose_frame_candidates(rgb, depth_mm, conf, row, fx_d, fy_d, cx_d, cy_d,
-                                          us, vs, min_confidence, floor_y, ceiling_y, polygon)
+        cands, n_dropped_edge = propose_frame_candidates(
+            rgb, depth_mm, conf, row, fx_d, fy_d, cx_d, cy_d, us, vs, min_confidence,
+            floor_y, ceiling_y, polygon, edge_residual_threshold_m)
+        n_dropped_edge_total += n_dropped_edge
         for c in cands:
             c["frame_index"] = idx
         raw_candidates.extend(cands)
-    print(f"      {len(raw_candidates)} raw candidates before any filtering")
+    print(f"      {len(raw_candidates)} raw candidates survive geometric-edge exclusion "
+          f"({n_dropped_edge_total} dropped: at a plane-intersection edge)")
 
     print(f"[3/5] Pass 2/3: clustering in 3D, requiring >= {min_views} distinct-frame "
           f"views (eps={cluster_eps}m)...")
@@ -449,6 +500,7 @@ def run(scan_dir: str, out_dir: str, every_n: int = 15, conf_threshold: float = 
         json.dump({
             "scan_dir": os.path.abspath(scan_dir),
             "frames_scanned": len(frame_indices),
+            "dropped_geometric_edge": n_dropped_edge_total,
             "raw_candidates_before_filtering": len(raw_candidates),
             "dropped_no_location": n_no_loc,
             "dropped_single_view": n_single_view,
@@ -458,12 +510,15 @@ def run(scan_dir: str, out_dir: str, every_n: int = 15, conf_threshold: float = 
             "damage_classes_considered": DAMAGE_CLASSES,
             "confidence_note": (
                 "Placeholder damage-class vocabulary, not matched to real staged "
-                "damage yet. Multi-view consistency filter (>= min_views distinct "
-                "frames at the same 3D location) removes one-off/transient false "
-                "positives but does NOT remove fixed geometric false positives "
-                "(floor-wall corner shadows, floor plank/grout seams) -- those are "
-                "real, repeated features and survive this filter too. See "
-                "PHASE_PLAN.md Phase 5 for the crop-review finding this doesn't fix."
+                "damage yet. Pipeline: region proposal -> geometric-edge exclusion "
+                "(rejects candidates whose local 3D neighborhood doesn't fit a single "
+                "plane -- catches real floor-wall/wall-wall/wall-ceiling corners) -> "
+                "multi-view consistency filter (>= min_views distinct frames at the "
+                "same 3D location -- catches one-off/transient false positives) -> "
+                "CLIP classification. Geometric-edge exclusion does NOT catch flat- "
+                "surface color anomalies like floor plank/grout seams, since those "
+                "stay coplanar -- see PHASE_PLAN.md Phase 5 for the crop-review "
+                "finding on what this does and doesn't fix."
             ),
         }, f, indent=2)
 
@@ -522,10 +577,17 @@ def main():
     ap.add_argument("--cluster-eps", type=float, default=0.1,
                      help="DBSCAN radius (meters) for grouping candidates into the same "
                           "real-world location.")
+    ap.add_argument("--edge-residual-threshold-m", type=float, default=0.02,
+                     help="A candidate's local 3D neighborhood must fit a single plane within "
+                          "this RMS residual (meters) to survive -- rejects real geometric "
+                          "corners (floor-wall, wall-wall, wall-ceiling), which span two plane "
+                          "orientations and can't fit one plane well. Does not catch flat-"
+                          "surface anomalies (seams, stains) -- see module docstring.")
     args = ap.parse_args()
     run(args.scan_dir, args.out_dir, every_n=args.every_n,
         conf_threshold=args.conf_threshold, min_confidence=args.min_confidence,
-        min_views=args.min_views, cluster_eps=args.cluster_eps)
+        min_views=args.min_views, cluster_eps=args.cluster_eps,
+        edge_residual_threshold_m=args.edge_residual_threshold_m)
 
 
 if __name__ == "__main__":

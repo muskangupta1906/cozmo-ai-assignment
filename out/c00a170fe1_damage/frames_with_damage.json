@@ -1,11 +1,12 @@
 {
   "scan_dir": "/Users/muskangupta/Documents/M/Code/cozmo-ai/Assignment/c00a170fe1",
   "frames_scanned": 115,
-  "raw_candidates_before_filtering": 1191,
-  "dropped_no_location": 1,
-  "dropped_single_view": 210,
-  "surviving_before_classification": 980,
-  "merged_detections": 7,
+  "dropped_geometric_edge": 164,
+  "raw_candidates_before_filtering": 1027,
+  "dropped_no_location": 0,
+  "dropped_single_view": 197,
+  "surviving_before_classification": 830,
+  "merged_detections": 5,
   "frame_sightings": [
     {
       "frame_index": 0,
@@ -23,148 +24,48 @@
       "predicted_class": "scuff or scratch mark"
     },
     {
-      "frame_index": 645,
-      "cluster_id": 127,
-      "predicted_class": "scuff or scratch mark"
-    },
-    {
-      "frame_index": 690,
-      "cluster_id": 127,
-      "predicted_class": "scuff or scratch mark"
-    },
-    {
-      "frame_index": 705,
-      "cluster_id": 127,
-      "predicted_class": "scuff or scratch mark"
-    },
-    {
-      "frame_index": 720,
-      "cluster_id": 127,
-      "predicted_class": "scuff or scratch mark"
-    },
-    {
-      "frame_index": 750,
-      "cluster_id": 127,
-      "predicted_class": "scuff or scratch mark"
-    },
-    {
-      "frame_index": 765,
-      "cluster_id": 127,
-      "predicted_class": "scuff or scratch mark"
-    },
-    {
-      "frame_index": 780,
-      "cluster_id": 127,
-      "predicted_class": "scuff or scratch mark"
-    },
-    {
       "frame_index": 870,
-      "cluster_id": 150,
+      "cluster_id": 135,
       "predicted_class": "scuff or scratch mark"
     },
     {
-      "frame_index": 945,
-      "cluster_id": 173,
-      "predicted_class": "scuff or scratch mark"
-    },
-    {
-      "frame_index": 960,
-      "cluster_id": 173,
-      "predicted_class": "scuff or scratch mark"
-    },
-    {
-      "frame_index": 975,
-      "cluster_id": 173,
-      "predicted_class": "scuff or scratch mark"
-    },
-    {
-      "frame_index": 990,
-      "cluster_id": 173,
-      "predicted_class": "scuff or scratch mark"
-    },
-    {
-      "frame_index": 1005,
-      "cluster_id": 173,
-      "predicted_class": "scuff or scratch mark"
-    },
-    {
-      "frame_index": 1005,
-      "cluster_id": 173,
-      "predicted_class": "scuff or scratch mark"
-    },
-    {
-      "frame_index": 1020,
-      "cluster_id": 173,
+      "frame_index": 930,
+      "cluster_id": 154,
       "predicted_class": "scuff or scratch mark"
     },
     {
       "frame_index": 1035,
-      "cluster_id": 150,
-      "predicted_class": "scuff or scratch mark"
-    },
-    {
-      "frame_index": 1035,
-      "cluster_id": 173,
+      "cluster_id": 135,
       "predicted_class": "scuff or scratch mark"
     },
     {
       "frame_index": 1050,
-      "cluster_id": 173,
+      "cluster_id": 168,
       "predicted_class": "scuff or scratch mark"
     },
     {
-      "frame_index": 1050,
-      "cluster_id": 186,
+      "frame_index": 1080,
+      "cluster_id": 154,
       "predicted_class": "scuff or scratch mark"
     },
     {
       "frame_index": 1095,
-      "cluster_id": 186,
-      "predicted_class": "scuff or scratch mark"
-    },
-    {
-      "frame_index": 1170,
-      "cluster_id": 173,
-      "predicted_class": "scuff or scratch mark"
-    },
-    {
-      "frame_index": 1170,
-      "cluster_id": 173,
-      "predicted_class": "scuff or scratch mark"
-    },
-    {
-      "frame_index": 1185,
-      "cluster_id": 173,
-      "predicted_class": "scuff or scratch mark"
-    },
-    {
-      "frame_index": 1185,
-      "cluster_id": 173,
+      "cluster_id": 168,
       "predicted_class": "scuff or scratch mark"
     },
     {
       "frame_index": 1455,
-      "cluster_id": 282,
+      "cluster_id": 258,
       "predicted_class": "scuff or scratch mark"
     },
     {
       "frame_index": 1500,
-      "cluster_id": 282,
-      "predicted_class": "scuff or scratch mark"
-    },
-    {
-      "frame_index": 1560,
-      "cluster_id": 311,
-      "predicted_class": "scuff or scratch mark"
-    },
-    {
-      "frame_index": 1575,
-      "cluster_id": 311,
+      "cluster_id": 258,
       "predicted_class": "scuff or scratch mark"
     },
     {
       "frame_index": 1680,
-      "cluster_id": 186,
+      "cluster_id": 168,
       "predicted_class": "scuff or scratch mark"
     }
   ],
@@ -176,5 +77,5 @@
     "peeling or bubbling paint",
     "scuff or scratch mark"
   ],
-  "confidence_note": "Placeholder damage-class vocabulary, not matched to real staged damage yet. Multi-view consistency filter (>= min_views distinct frames at the same 3D location) removes one-off/transient false positives but does NOT remove fixed geometric false positives (floor-wall corner shadows, floor plank/grout seams) -- those are real, repeated features and survive this filter too. See PHASE_PLAN.md Phase 5 for the crop-review finding this doesn't fix."
+  "confidence_note": "Placeholder damage-class vocabulary, not matched to real staged damage yet. Pipeline: region proposal -> geometric-edge exclusion (rejects candidates whose local 3D neighborhood doesn't fit a single plane -- catches real floor-wall/wall-wall/wall-ceiling corners) -> multi-view consistency filter (>= min_views distinct frames at the same 3D location -- catches one-off/transient false positives) -> CLIP classification. Geometric-edge exclusion does NOT catch flat- surface color anomalies like floor plank/grout seams, since those stay coplanar -- see PHASE_PLAN.md Phase 5 for the crop-review finding on what this does and doesn't fix."
 }

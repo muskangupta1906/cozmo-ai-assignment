@@ -413,6 +413,27 @@ session) since photo tier has no dependency on it.
       found via crop review — still all "scuff or scratch mark" at confidence just
       above threshold. Geometric-edge exclusion or illumination normalization remains
       the real candidate fix for that, not yet implemented.
+- [x] **Implemented geometric-edge exclusion.** Fits a single plane (smallest eigenvalue
+      of the centered covariance) to each candidate's local 3D neighborhood before it's
+      even added to the candidate list; rejects it if the RMS residual exceeds
+      `--edge-residual-threshold-m` (default 2cm) -- a real floor-wall/wall-wall/wall-
+      ceiling corner spans two surface orientations and can't fit one plane well, while a
+      flat-surface anomaly (seam, stain, real damage) stays coplanar. Re-ran on
+      `c00a170fe1`: 164/1191 candidates dropped at this stage, final merged detections
+      7->5. **Partial improvement, not a full fix**: re-inspected all 5 final crops --
+      still all false positives (corner shadows, one floor seam), including the exact
+      same ceiling-wall corner (cluster 1, same bbox) that survived before. Root-caused
+      why: measured its local plane residual directly at 6mm, well under the 2cm
+      threshold, despite being visually an obvious corner. Reason: the 2D color-anomaly
+      bbox (a shadow cast near the ceiling line) doesn't reliably sample depth points
+      from *both* sides of the true 3D boundary -- depth confidence tends to drop right
+      at surface edges, so the residual window ends up seeing points from essentially
+      one plane only. The visual "this looks like a corner" and "this bbox's depth
+      samples straddle two planes" are only loosely correlated, not the same thing.
+      Widening the residual-check window past the candidate's own bbox, or combining
+      with illumination normalization for the still-unaddressed flat-surface (grout
+      seam) case, are the next candidates -- not implemented, pending a decision on
+      which to pursue rather than continuing to tune blind.
 
 ## Phase 6 — Benchmark set construction (own captures, own ground truth)
 
