@@ -33,8 +33,15 @@ agent at the end of a session.
   Hit and fixed an OOM bug along the way (see Phase 2 below); known remaining issue is
   overlapping/noisy room footprints on stitched output on both scans, not yet fixed.
   `c7d28f72c6` stays single-room; its code path was reviewed but not executed.
-- Not yet started: video tier, photo tier, damage detection, concealed-damage flags,
-  scope line items, benchmark construction, ground truth capture, repeatability testing,
+- Phase 3 (video tier) started: `video_tier.py` implements SfM (pycolmap) + gravity
+  alignment + placeholder scale recovery, runs end-to-end without crashing, but is
+  blocked on real video-tier capture data before it can be trusted or wired to the
+  output contract — the LiDAR scan's own RGB track was tried as a stand-in and produces
+  weak/fragmented registration, most likely because its sweep-heavy capture motion
+  (built for LiDAR coverage) isn't representative of a steady photogrammetry
+  walkthrough. See Phase 3 below before doing more work here blind.
+- Not yet started: photo tier, damage detection, concealed-damage flags, scope line
+  items, benchmark construction, ground truth capture, repeatability testing,
   head-to-head comparison, fix loop, and all deliverables/report writing.
 
 ## Phase 0 — Decisions and scaffolding — DONE (2026-09-12)
@@ -160,11 +167,55 @@ agent at the end of a session.
   candidate, once real numbers exist. `c7d28f72c6`'s single-room path also remains
   execution-unverified — same reasoning, low risk, revisit if time allows before Phase 6.
 
-## Phase 3 — Video tier
+## Phase 3 — Video tier — IN PROGRESS (started 2026-09-13)
 
-- [ ] Build a video-tier pipeline (e.g. frame extraction + SfM/VIO or monocular depth)
-      producing the same output contract, gated looser (±3% wall lengths, calibrated).
-- [ ] Capture/acquire a video-tier version of the same benchmark rooms.
+- [x] **Approach decided**: classical SfM via `pycolmap` (COLMAP's Python API, no
+      external `colmap` binary needed) rather than a monocular-depth-model route.
+      Reasoning: deterministic, no model checkpoint to bundle/download, explainable
+      for the report — accepted the heavier native-dependency footprint (pycolmap +
+      ffmpeg, both now installed in the `cozmo` conda env) as the tradeoff.
+- [x] Built `video_tier.py`: ffmpeg frame extraction at a fixed fps -> SIFT feature
+      extraction -> sequential matching -> incremental SfM mapping -> **gravity
+      alignment** (COLMAP's world frame has no relationship to "up", unlike ARKit —
+      estimated by averaging each registered camera's local up-axis rotated into
+      world space, on the assumption the operator held the phone roughly upright)
+      -> **scale recovery** (SfM only recovers shape; scale is anchored to an assumed
+      1.4m average camera-carry height above the floor — an explicit placeholder, same
+      spirit as the LiDAR tier's placeholder CI model, NOT a calibration). Runs
+      end-to-end without crashing.
+- [ ] **Not yet wired to the output contract.** `detect_floor_and_ceiling` /
+      `extract_wall_footprint` from `reconstruct_room.py` are meant to be reused as-is
+      once the SfM cloud is in the same (y-up, meters) convention — deliberately not
+      wired yet because the sparse point clouds produced so far are too degenerate to
+      make that a meaningful test (see next item). Wiring this + deciding whether
+      sparse points are dense enough or a dense stereo pass (`pycolmap.patch_match_stereo`
+      + `stereo_fusion`, already available in the same API) is needed first, is the
+      next concrete step.
+- [ ] **Blocked on real video-tier data, not a code bug.** Smoke-tested against
+      `Assignment/1a8384c3f6/rgb.mp4` (the LiDAR scan's own RGB track) as a stand-in,
+      since no genuine video-tier capture exists yet (that's a Phase 6 task). Result:
+      weak registration — only 11/230 frames at 2fps, 56/201 at 8fps (and even that
+      fragmented into 5 disconnected sub-models), with an implausibly wide camera-height
+      spread (median 0.21m but min/max -1.38m/+0.49m) suggesting the registered subset
+      itself is partly wrong, not just sparse. Root cause is very likely the *source
+      motion*, not the SfM code: Stray Scanner drives the camera in a sweeping,
+      point-it-at-every-surface pattern for LiDAR coverage (see Phase 1/2 notes on
+      repeated wall sweeps) — the opposite of the smooth, steady walkthrough classical
+      feature-matching SfM needs. Tried denser sampling (2fps -> 8fps) as the obvious
+      first fix; it measurably helped (11 -> 56 registered) but didn't come close to
+      resolving it, which points at motion profile over sampling rate. **Do not** keep
+      tuning SfM hyperparameters against this proxy data looking for a fix — it isn't
+      representative of what a real video-tier capture (native Camera app, walked
+      steadily per `docs/capture_protocol.md`) will look like, and doing so risks
+      overfitting the pipeline to compensate for a data-quality problem that a real
+      capture won't have. Real validation needs an actual Phase 6 video-tier capture.
+- [ ] Capture/acquire a video-tier version of the same benchmark rooms (Phase 6 task —
+      steady handheld walkthrough via native Camera app, not a LiDAR-sweep motion).
+- [ ] Once real video-tier footage exists: re-run `video_tier.py`, confirm registration
+      rate/quality on genuinely suitable input, then wire in floor/ceiling + footprint
+      + the same JSON output contract (tier="video", wider ±3% calibrated CIs) and
+      re-test against `1a8384c3f6`'s footage too (still useful as a stress/worst-case
+      test once the happy path is proven, just not the primary validation case).
 
 ## Phase 4 — Photo tier (the floor: 2–8 stills/room, no depth/poses)
 
