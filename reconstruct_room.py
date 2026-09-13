@@ -57,10 +57,26 @@ def get_rgb_resolution(scan_dir: str):
 
 
 def build_fused_point_cloud(scan_dir: str, every_n: int = 5, min_confidence: int = 2,
-                             max_depth_m: float = 5.0) -> o3d.geometry.PointCloud:
+                             max_depth_m: float = 5.0, frame_indices=None,
+                             odo=None) -> o3d.geometry.PointCloud:
     """
-    Back-projects every `every_n`-th frame's depth map to 3D and accumulates
-    it into one point cloud in world coordinates.
+    Back-projects depth frames to 3D and accumulates them into one point cloud
+    in world coordinates.
+
+    frame_indices: if given, restrict to this frame subset (still strided by
+    every_n within it) instead of every `every_n`-th frame over the whole
+    scan -- used by stitch_property.py to build a single room's cloud from
+    just the frames the trajectory segmenter assigned to that room, out of a
+    larger multi-room walkthrough. A dwelled-on room can collect thousands of
+    frames (they're spatially redundant by construction -- that's how
+    segment_rooms finds rooms at all), so skipping the every_n stride here
+    was fusing 10-20x more frames than the single-room contract ever does,
+    which OOM-killed the process on a 3-room scan.
+
+    odo: if given, use this odometry DataFrame instead of loading
+    scan_dir/odometry.csv -- lets callers pass drift-corrected poses (see
+    stitch_property.py's loop-closure correction) without duplicating the
+    rest of this function.
 
     min_confidence: keep only depth pixels with confidence >= this (0..2, 2=best).
     Using only high-confidence points early keeps the first pass from choking
@@ -69,7 +85,8 @@ def build_fused_point_cloud(scan_dir: str, every_n: int = 5, min_confidence: int
     K = load_intrinsics(scan_dir)
     fx, fy, cx, cy = K[0, 0], K[1, 1], K[0, 2], K[1, 2]
 
-    odo = load_odometry(scan_dir)
+    if odo is None:
+        odo = load_odometry(scan_dir)
     depth_frames = list_depth_frames(scan_dir)
     conf_frames = list_confidence_frames(scan_dir)
     n = min(len(odo), len(depth_frames), len(conf_frames))
@@ -91,11 +108,16 @@ def build_fused_point_cloud(scan_dir: str, every_n: int = 5, min_confidence: int
 
     us, vs = np.meshgrid(np.arange(depth_w), np.arange(depth_h))
 
+    if frame_indices is None:
+        frame_indices = range(0, n, every_n)
+    else:
+        frame_indices = [i for i in frame_indices if i < n][::every_n]
+
     all_points = []
     frames_attempted = 0
     frames_skipped_pose = 0
     frames_skipped_nopoints = 0
-    for i in range(0, n, every_n):
+    for i in frame_indices:
         frames_attempted += 1
         depth_mm = load_depth_mm(depth_frames[i])
         conf = load_confidence(conf_frames[i])
