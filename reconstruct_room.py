@@ -56,6 +56,45 @@ def get_rgb_resolution(scan_dir: str):
     return w, h
 
 
+def backproject_frame(depth_mm: np.ndarray, conf: np.ndarray, row,
+                       fx_d: float, fy_d: float, cx_d: float, cy_d: float,
+                       us: np.ndarray, vs: np.ndarray,
+                       min_confidence: int = 2, max_depth_m: float = 5.0):
+    """
+    Back-projects one depth frame to world-space 3D points using one
+    odometry row's pose. Factored out of build_fused_point_cloud so
+    damage_detection/detect_damage.py can get the same validated
+    depth-pixel -> world-point math (including the degenerate-pose guard)
+    without duplicating it -- this exact calculation (intrinsics scaling +
+    quaternion pose) was the source of real bugs earlier in the project,
+    so it has exactly one implementation now.
+
+    Returns (pts_world (N,3), valid_mask (H,W) bool -- which depth pixels
+    contributed a point) or (None, valid_mask) if the frame's pose is
+    degenerate/missing or no pixels pass the confidence/depth filters.
+    valid_mask lets callers map a world point back to its source pixel.
+    """
+    z = depth_mm / 1000.0  # mm -> m
+    valid = (conf >= min_confidence) & (z > 0.05) & (z < max_depth_m)
+    if not np.any(valid):
+        return None, valid
+
+    x = (us[valid] - cx_d) * z[valid] / fx_d
+    y = (vs[valid] - cy_d) * z[valid] / fy_d
+    zc = z[valid]
+    pts_cam = np.stack([x, y, zc, np.ones_like(zc)], axis=1)  # (N,4)
+
+    quat_norm = np.sqrt(row["qx"]**2 + row["qy"]**2 + row["qz"]**2 + row["qw"]**2)
+    pose_vals = [row["x"], row["y"], row["z"], row["qx"], row["qy"], row["qz"], row["qw"]]
+    if quat_norm < 1e-8 or not np.all(np.isfinite(pose_vals)):
+        return None, valid
+    T = pose_to_T(row)
+    pts_world = (T @ pts_cam.T).T[:, :3]
+    if not np.all(np.isfinite(pts_world)):
+        return None, valid
+    return pts_world, valid
+
+
 def build_fused_point_cloud(scan_dir: str, every_n: int = 5, min_confidence: int = 2,
                              max_depth_m: float = 5.0, frame_indices=None,
                              odo=None) -> o3d.geometry.PointCloud:
@@ -125,29 +164,16 @@ def build_fused_point_cloud(scan_dir: str, every_n: int = 5, min_confidence: int
             depth_mm = cv2_resize_nn(depth_mm, depth_w, depth_h)
             conf = cv2_resize_nn(conf, depth_w, depth_h)
 
-        z = depth_mm / 1000.0  # mm -> m
-        valid = (conf >= min_confidence) & (z > 0.05) & (z < max_depth_m)
+        row = odo.iloc[i]
+        pts_world, valid = backproject_frame(depth_mm, conf, row, fx_d, fy_d, cx_d, cy_d,
+                                              us, vs, min_confidence, max_depth_m)
         if not np.any(valid):
             frames_skipped_nopoints += 1
             continue
-
-        x = (us[valid] - cx_d) * z[valid] / fx_d
-        y = (vs[valid] - cy_d) * z[valid] / fy_d
-        zc = z[valid]
-        pts_cam = np.stack([x, y, zc, np.ones_like(zc)], axis=1)  # (N,4)
-
-        row = odo.iloc[i]
-        quat_norm = np.sqrt(row["qx"]**2 + row["qy"]**2 + row["qz"]**2 + row["qw"]**2)
-        pose_vals = [row["x"], row["y"], row["z"], row["qx"], row["qy"], row["qz"], row["qw"]]
-        if quat_norm < 1e-8 or not np.all(np.isfinite(pose_vals)):
+        if pts_world is None:
             # Degenerate/missing pose for this frame (seen in real captures,
             # e.g. a dropped VIO frame) -- skip it rather than let a NaN
             # transform poison the whole fused cloud.
-            frames_skipped_pose += 1
-            continue
-        T = pose_to_T(row)
-        pts_world = (T @ pts_cam.T).T[:, :3]
-        if not np.all(np.isfinite(pts_world)):
             frames_skipped_pose += 1
             continue
         all_points.append(pts_world)

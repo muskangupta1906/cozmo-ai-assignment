@@ -40,9 +40,16 @@ agent at the end of a session.
   weak/fragmented registration, most likely because its sweep-heavy capture motion
   (built for LiDAR coverage) isn't representative of a steady photogrammetry
   walkthrough. See Phase 3 below before doing more work here blind.
-- Not yet started: photo tier, damage detection, concealed-damage flags, scope line
-  items, benchmark construction, ground truth capture, repeatability testing,
-  head-to-head comparison, fix loop, and all deliverables/report writing.
+- Phase 5 (damage detection) started: `damage_detection/detect_damage.py` does
+  per-frame candidate region proposal + pretrained CLIP zero-shot classification
+  (steps 1-2 of the planned pipeline only), runs end-to-end, but classification isn't
+  discriminating well yet on real (undamaged) surface texture — flagged, not fixed
+  blind, pending Phase 6 real damage data. Dedup, metric extent, concealed-damage
+  rules, and scope line items are the explicit next increment.
+- Photo tier (Phase 4) is being built in a separate session — not tracked here.
+- Not yet started: concealed-damage flags/scope items (see Phase 5), benchmark
+  construction, ground truth capture, repeatability testing, head-to-head comparison,
+  fix loop, and all deliverables/report writing.
 
 ## Phase 0 — Decisions and scaffolding — DONE (2026-09-12)
 
@@ -226,13 +233,48 @@ agent at the end of a session.
 - [ ] Gate: ±8% wall lengths with calibrated intervals; whole-property footprint ±8%,
       correct adjacency, no room overlaps.
 
-## Phase 5 — Damage detection + scope
+## Phase 5 — Damage detection + scope — STARTED (2026-09-13)
 
-- [ ] Per-surface damage region detection with class + metric extent (needs the
-      furnished, staged-damage room from the benchmark, spanning 2 damage classes).
-- [ ] Concealed-damage flags with an explicit fired rule (documented heuristic/model,
-      not a black box).
-- [ ] Scope line items keyed to specific surfaces.
+- [x] **Approach decided**: heuristic region proposal (classical CV color-anomaly
+      against local background, restricted to floor/wall/ceiling surface pixels only
+      via the room's already-known geometry) + pretrained CLIP zero-shot classification
+      (`open_clip`, ViT-B-32-quickgelu/openai weights, disclosed pretrained-model use,
+      no fine-tuning). No numeric gate on damage detection in the spec (unlike ceiling
+      height etc.) — scored via output-contract/compliance-matrix presence, so this
+      favors an explainable pipeline over a black-box trained model.
+- [x] Built `damage_detection/detect_damage.py`, steps 1+2 only (region proposal +
+      classification), per-frame, deliberately NOT yet doing 3D dedup/clustering across
+      frames, metric extent, concealed-damage rules, or scope line items — those are
+      the explicit next increment. Refactored `reconstruct_room.py` to expose
+      `backproject_frame` as a shared helper (was inlined in `build_fused_point_cloud`)
+      so this module reuses the exact same validated depth->world-point math instead of
+      duplicating it — re-verified `reconstruct_room.py` still produces the same output
+      after the refactor (ceiling height 2.11m on `c00a170fe1`, unchanged).
+- [x] Wired to output: `damage_detections.json` (every surviving detection: frame,
+      surface type, pixel bbox, class, confidence, world xyz), `frames_with_damage.json`
+      (frame-level summary), and `damage_plan.png` (room footprint polygon + marked
+      damage locations, colored/labeled by class — first cut at "show damage on the
+      room plan," no dedup so the same real damage across frames = multiple markers).
+- [x] Smoke-tested on `c00a170fe1` (undamaged real room, no ground truth available —
+      same honesty-about-data-gap as Phase 3): runs end to end, 162 detections across
+      80/115 sampled frames, all output artifacts well-formed. **Calibration finding,
+      not yet fixed**: every single detection landed on the same class ("scuff or
+      scratch mark") with confidence clustered just above the 0.5 threshold
+      (0.50-0.75) — CLIP isn't meaningfully discriminating among the 6 damage-class
+      prompts on real (undamaged) surface texture yet. Flagging rather than silently
+      tuning against this proxy data, same reasoning as Phase 3: real calibration needs
+      Phase 6's actual staged-damage room, not more parameter guessing against a clean
+      room.
+- [ ] `DAMAGE_CLASSES` in `detect_damage.py` is a generic placeholder set (water stain,
+      mold, crack, hole/puncture, peeling paint, scuff/scratch) — swap for whatever's
+      actually staged in the Phase 6 damage room once known.
+- [ ] Not yet built: 3D dedup/clustering of repeated detections across frames, metric
+      extent (area) per merged region, surface (wall-index) assignment, concealed-
+      damage rule engine, scope line items. Deferred on purpose per current scope, not
+      forgotten — see the damage_detection/detect_damage.py module docstring for the
+      full planned pipeline shape.
+- [ ] Photo tier's damage-detection path is out of scope here (photo tier itself is
+      being built in a separate session) — revisit once that pipeline exists.
 
 ## Phase 6 — Benchmark set construction (own captures, own ground truth)
 
