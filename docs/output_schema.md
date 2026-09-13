@@ -35,6 +35,44 @@ Deliberately not yet present, tracked for later phases:
 - Per-wall openings currently report a single width/position; door vs. window
   classification is not attempted (Round-1 scope note, not a bug).
 
+## Photo tier (`room.json`, `tier: "photo"`) — Phase 4, `reconstruct_room_photo.py`
+
+Same fields as the LiDAR shape above, plus:
+
+```jsonc
+{
+  "tier": "photo",
+  "n_photos_total": 5,               // photos found in the room folder
+  "n_photos_used": 3,                // photos that actually chained into the fused cloud
+  "mean_registration_inlier_ratio": 0.62,  // across successfully chained pairs
+  ...
+}
+```
+
+`n_photos_used < n_photos_total` means registration broke somewhere in the
+chain (see `reconstruct_room_photo.register_photo_chain`) — the room was
+still reconstructed, just from fewer photos than were provided, and this
+is reported rather than hidden. CIs on this tier scale with both the depth
+model's assumed relative error and `mean_registration_inlier_ratio`, not a
+fixed absolute figure like the LiDAR tier — see
+`compute_confidence_intervals_photo`'s docstring.
+
+## Property (stitched plan), photo tier — Phase 4, `stitch_property_photo.py`
+
+Matches the per-property target shape above, with two photo-tier-specific
+differences documented in `property.json`'s own `confidence_note` (not
+duplicated here in full — see the module docstring in
+`stitch_property_photo.py` for the reasoning):
+
+- `rooms[].transform_xz` is recovered by snapping each room's declared
+  shared opening to its neighbor's (an `adjacency.json` the capturer
+  provides, not inferred by vision) — true relative room orientation
+  beyond that one shared wall is not recoverable from independent photo
+  folders with no shared pose, and isn't claimed to be.
+- `drift_correction.method` is `"opening_anchored_placement"`, not one of
+  the LiDAR tier's trajectory-based methods — there is no continuous pose
+  to drift in the first place at this tier.
+
 ## Per-property (stitched plan) — target shape, Phase 2
 
 ```jsonc

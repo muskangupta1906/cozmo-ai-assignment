@@ -1,0 +1,4 @@
+[
+  {"rooms": ["room_0", "room_1"], "opening_index": {"room_0": 0, "room_1": 0}},
+  {"rooms": ["room_1", "room_2"], "opening_index": {"room_1": 0, "room_2": 0}}
+]

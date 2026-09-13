@@ -25,6 +25,28 @@ until then these are targets, not verified numbers, and should not be quoted as 
   direction once real numbers exist, not just repeat the gate thresholds
   as if they were guaranteed.
 
+## Photo tier implementation notes (Phase 4)
+
+- Depth per still comes from a pretrained monocular metric depth model,
+  `depth-anything/Depth-Anything-V2-Metric-Indoor-Small-hf` (disclosed
+  pretrained model per the case study's allowance) — runs locally via
+  `transformers`, no network calls at inference time, weights fetched by
+  script on first run (~100MB, cached by HF's usual cache dir). CPU or MPS
+  (Apple Silicon); ~1s/photo on MPS in testing.
+- Intrinsics come from EXIF `FocalLengthIn35mmFilm` when present (true
+  iPhone stills normally have this); falls back to an assumed 69.4°
+  horizontal FOV (iPhone main/wide camera spec) when EXIF is missing or a
+  non-iPhone/edited image strips it — see `photo_scan_io.get_intrinsics`.
+  The fallback path directly biases every downstream metric distance, which
+  is one reason the photo tier's CI is wide.
+- Cross-photo registration (needed to fuse 2-8 independent stills into one
+  metric room) has a real, observed failure mode on non-ideal source
+  material: weak/no shared texture between photos, or too little parallax,
+  produces too few RANSAC inliers and that photo (and everything after it
+  in the chain) gets dropped rather than guessed at. See
+  `dev_fixtures/photo_tier_smoke/` and PHASE_PLAN.md Phase 4 for the
+  smoke-test evidence this was actually exercised, not just theorized.
+
 ## Known capture-time risk (see PHASE_PLAN.md)
 
 Even on LiDAR-capable hardware, ceiling height is only reliable if the

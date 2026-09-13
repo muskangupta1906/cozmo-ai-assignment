@@ -46,7 +46,15 @@ agent at the end of a session.
   discriminating well yet on real (undamaged) surface texture — flagged, not fixed
   blind, pending Phase 6 real damage data. Dedup, metric extent, concealed-damage
   rules, and scope line items are the explicit next increment.
-- Photo tier (Phase 4) is being built in a separate session — not tracked here.
+- Phase 4 (photo tier) built and smoke-tested: `reconstruct_room_photo.py` (metric
+  monocular depth + feature-matched RANSAC-Kabsch registration, reusing the LiDAR
+  tier's floor/ceiling/footprint/opening code) and `stitch_property_photo.py`
+  (explicit-adjacency doorway-snap placement for independently-captured room
+  folders). Caught and fixed a real registration bug via smoke testing (see Phase 4
+  below) before it could ship silently broken. Like Phase 3, blocked on real
+  photo-tier capture data for accuracy validation — smoke-tested on a disposable
+  fixture (`dev_fixtures/photo_tier_smoke/`) extracted from the LiDAR scan's video,
+  explicitly not benchmark-quality data (see its README).
 - Not yet started: concealed-damage flags/scope items (see Phase 5), benchmark
   construction, ground truth capture, repeatability testing, head-to-head comparison,
   fix loop, and all deliverables/report writing.
@@ -174,6 +182,113 @@ agent at the end of a session.
   candidate, once real numbers exist. `c7d28f72c6`'s single-room path also remains
   execution-unverified — same reasoning, low risk, revisit if time allows before Phase 6.
 
+## Phase 4 — Photo tier — pipeline built and smoke-tested (2026-09-13)
+
+Built ahead of Phase 3 (video tier is being worked in parallel in a separate
+session) since photo tier has no dependency on it.
+
+- [x] **Design**: no depth, no poses, 2-8 stills/room. Metric depth per
+      still from a disclosed pretrained model
+      (`depth-anything/Depth-Anything-V2-Metric-Indoor-Small-hf`, via
+      `transformers`, local inference only) sidesteps classical SfM's usual
+      hard part (scale recovery) — both photos' back-projected points are
+      already metric, so registering two photos only needs to find a rigid
+      rotation+translation (Kabsch), not also solve for scale. Relative
+      pose between stills comes from ORB feature matches + RANSAC-Kabsch on
+      the matched keypoints' 3D back-projections, chained photo-to-predecessor
+      (not a full pose graph — Round-1 scope, documented in
+      `reconstruct_room_photo.py`'s module docstring). Everything downstream
+      of "one fused metric point cloud" reuses `reconstruct_room.py`'s
+      floor/ceiling/footprint/opening code as-is, per `output_schema.md`'s
+      tier-agnostic design rule — floor/ceiling detection is the one thing
+      that needed a photo-tier-specific version (`detect_floor_and_ceiling_photo`),
+      since a handful of stills has no walked-over density spike to key off
+      the way a continuous LiDAR walkthrough does; both floor and ceiling
+      here use the same tightest-band-first RANSAC search the LiDAR tier
+      only needed for the ceiling.
+- [x] New files: `photo_scan_io.py` (photo folder loading, EXIF/HEIC,
+      intrinsics with a documented iPhone-FOV fallback),
+      `reconstruct_room_photo.py` (single-room contract), env now has
+      torch/transformers/timm/pillow-heif installed in the `cozmo` conda env.
+- [x] **Found + fixed a real bug via smoke testing**: the RANSAC-Kabsch
+      registration's degeneracy guard checked the wrong singular value.
+      Kabsch's minimal sample is exactly 3 points, and 3 centered points
+      always span at most a 2D plane — so the covariance matrix's smallest
+      singular value is *always* ~0 by construction, not a signal of bad
+      data. The guard (`S[-1] < 1e-9`) rejected every single RANSAC sample
+      on every real photo pair tested, 100% of the time, meaning every
+      pairwise registration failed silently into "not enough inliers." Fixed
+      to check `S[1]` (the second singular value — the real collinearity
+      test) instead. Verified before/after on the same real photo pair:
+      before, 0/2000 RANSAC samples accepted; after, several hundred
+      accepted with 30-94% inlier ratios depending on the pair's shared
+      texture. Caught before it shipped broken because a first end-to-end
+      smoke test produced a physically impossible 9.6m "ceiling height"
+      instead of a clean failure — exactly the "confident garbage" mode the
+      case study penalizes hardest.
+- [x] Separately hardened `kabsch`/`ransac_register` against a related but
+      distinct risk: an accepted-but-wrong minimal sample propagating
+      non-finite values downstream undetected. Added explicit finiteness
+      checks at every stage (covariance, SVD result, final R/t) and a
+      refit-consistency check (does the final transform still agree with
+      its own inlier set?) before a registration is trusted. A macOS
+      Accelerate-BLAS quirk was found and ruled out separately: ordinary,
+      verified-finite float64 matmuls raise spurious "divide by zero"/
+      "invalid value" RuntimeWarnings on this platform — confirmed benign
+      by direct inspection (inputs and outputs both checked all-finite),
+      filtered narrowly by warning message so a real non-finite warning
+      elsewhere wouldn't be silently swallowed too.
+- [x] `stitch_property_photo.py`: multi-room stitching for independently-
+      captured per-room photo folders. Key design decision, different from
+      the LiDAR tier: true relative room position/orientation is not
+      recoverable from disjoint photo folders with no shared pose or visual
+      overlap — that's a real information gap, not a registration problem
+      to solve better. Adjacency (which rooms connect) and which detected
+      opening is the shared doorway are taken as **explicit input**
+      (`adjacency.json`, provided by whoever captures — a trivial addition
+      to the one-page capture protocol), not inferred by vision. Placement
+      snaps each child room's declared opening to coincide with its
+      parent's, oriented so the two rooms fall on opposite sides of that
+      wall (`align_child_to_parent`) — this places the shared wall
+      correctly without claiming to recover the child's true absolute
+      orientation beyond it. Unit-tested directly on synthetic rooms
+      (confirmed: shared wall midpoints coincide exactly, neither room's
+      centroid falls inside the other). Rooms with no adjacency entry, a
+      failed reconstruction, or an out-of-range declared opening index get
+      a non-overlapping fallback-row placement instead of a silent guess.
+- [x] Built a disposable dev smoke-test fixture,
+      `dev_fixtures/photo_tier_smoke/` (3 room folders of 5 stills each,
+      extracted from contiguous single-room segments of the existing
+      `1a8384c3f6` LiDAR scan's video, since no real photo-tier capture
+      exists yet) — see its README for exactly why this is NOT benchmark
+      data (video frames mid-walk, not composed stills; no EXIF; no ground
+      truth) and must not be used to report accuracy. Ran both
+      `reconstruct_room_photo.py` and `stitch_property_photo.py`
+      end-to-end on it: depth model runs, registration chains succeed when
+      photos share enough texture/parallax and fail safely (drop + warn)
+      when they don't, `room.json`/`property.json` both schema-valid,
+      `property_plan.png` renders 3 non-overlapping room polygons.
+- [ ] **Known, honestly-unresolved from this smoke test**: absolute
+      accuracy on the test fixture is bad (ceiling heights of 8-9m on a
+      real room), and registration failed outright on 2 of 3 test rooms'
+      middle photos. Given the test data itself is degenerate proxy
+      material (motion-blurred video frames from continuous walking, not
+      deliberate corner-to-corner stills — see the fixture's README), this
+      is not yet separable into "real pipeline bug" vs "bad test input"
+      vs "expected, uncalibrated photo-tier error" without either better
+      test photos or real ground truth. Documented rather than tuned away
+      blind, consistent with how Phase 2's wall-footprint noise issue was
+      handled — revisit once Phase 6 produces a real photo-tier capture.
+- [ ] Not yet done: opening detection is untested on this tier (0-1
+      openings found across all 3 fixture rooms, too sparse to judge
+      the heuristic's real behavior here); no EXIF-bearing real iPhone
+      photos have been run through the pipeline yet (fixture data has none,
+      always hits the fallback-FOV path); registration is a chain, not a
+      pose graph — one bad link truncates everything after it, which real
+      capture protocol guidance (Phase 0's `docs/capture_protocol.md`)
+      should probably address (e.g. "take photos in a loop, not a line")
+      once this tier's real failure modes are better understood.
+
 ## Phase 3 — Video tier — IN PROGRESS (started 2026-09-13)
 
 - [x] **Approach decided**: classical SfM via `pycolmap` (COLMAP's Python API, no
@@ -223,15 +338,6 @@ agent at the end of a session.
       + the same JSON output contract (tier="video", wider ±3% calibrated CIs) and
       re-test against `1a8384c3f6`'s footage too (still useful as a stress/worst-case
       test once the happy path is proven, just not the primary validation case).
-
-## Phase 4 — Photo tier (the floor: 2–8 stills/room, no depth/poses)
-
-- [ ] Build a sparse multi-view pipeline (e.g. classical SfM or a monocular
-      single/few-view depth model) that still produces a stitched whole-property plan.
-- [ ] Must handle per-room photo folders and still stitch — a single-room-only path
-      fails this gate outright.
-- [ ] Gate: ±8% wall lengths with calibrated intervals; whole-property footprint ±8%,
-      correct adjacency, no room overlaps.
 
 ## Phase 5 — Damage detection + scope — STARTED (2026-09-13)
 

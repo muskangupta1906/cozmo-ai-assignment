@@ -1,0 +1,87 @@
+{
+  "property_name": "property_test",
+  "source_scan": "/Users/muskangupta/Documents/M/Code/cozmo-ai/dev_fixtures/photo_tier_smoke/property_test",
+  "tier": "photo",
+  "rooms": [
+    {
+      "room_name": "room_0",
+      "room_json_path": "room_0/room.json",
+      "transform_xz": [
+        [
+          1.0,
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          1.0,
+          0.0
+        ]
+      ]
+    },
+    {
+      "room_name": "room_1",
+      "room_json_path": "room_1/room.json",
+      "transform_xz": [
+        [
+          1.0,
+          0.0,
+          2.1883973606551894
+        ],
+        [
+          0.0,
+          1.0,
+          2.0947689939428753
+        ]
+      ]
+    },
+    {
+      "room_name": "room_2",
+      "room_json_path": "room_2/room.json",
+      "transform_xz": [
+        [
+          1.0,
+          0.0,
+          6.900783106658282
+        ],
+        [
+          0.0,
+          1.0,
+          7.7184173656862525
+        ]
+      ]
+    }
+  ],
+  "adjacency": [
+    {
+      "rooms": [
+        "room_0",
+        "room_1"
+      ],
+      "opening_index": {
+        "room_0": 0,
+        "room_1": 0
+      }
+    },
+    {
+      "rooms": [
+        "room_1",
+        "room_2"
+      ],
+      "opening_index": {
+        "room_1": 0,
+        "room_2": 0
+      }
+    }
+  ],
+  "total_floor_area_m2": 44.485,
+  "drift_correction": {
+    "method": "opening_anchored_placement",
+    "ablation_note": "not applicable in the LiDAR-tier sense (no continuous trajectory, no accumulated VIO drift to correct) -- each room is an independent capture with its own metric error instead; see each room's own confidence_note."
+  },
+  "placement_notes": [
+    "room_1: fallback offset (bad opening_index)",
+    "room_2: fallback offset (bad opening_index)"
+  ],
+  "confidence_note": "Photo-tier stitching cannot recover true relative room position/orientation from independent, non-overlapping photo folders -- that information was never captured (see module docstring). Adjacency (which rooms connect) and which detected opening is the shared doorway are taken as EXPLICIT input from adjacency.json, not inferred by vision. Placement snaps each child room's declared opening to coincide with its parent's, oriented so the two rooms fall on opposite sides of that wall -- this places the shared wall correctly but does NOT verify the child room's absolute orientation beyond that one wall (e.g. a mirror-imaged room layout across the doorway is indistinguishable from the correct one on this evidence). Rooms with no adjacency.json entry, a missing/failed reconstruction, or a bad declared opening_index are placed in a non-overlapping fallback row instead of guessed at -- see placement_notes for which rooms (if any) hit this path."
+}
