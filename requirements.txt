@@ -1,0 +1,15 @@
+# Python 3.10 (tested: 3.10.21). Create/activate an env first, e.g.:
+#   conda create -n cozmo python=3.10 && conda activate cozmo
+#   pip install -r requirements.txt
+#
+# Also requires ffmpeg on PATH (video-tier frame extraction) -- not a pip
+# package: `brew install ffmpeg` (macOS) or `apt install ffmpeg` (Linux).
+
+numpy==2.2.6
+pandas==2.3.3
+scipy==1.15.3
+scikit-learn==1.7.2
+matplotlib==3.10.9
+opencv-python-headless==5.0.0.93
+open3d==0.19.0
+pycolmap==4.2.0
