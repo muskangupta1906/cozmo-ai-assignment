@@ -1,0 +1,36 @@
+{
+  "with_drift_correction": {
+    "total_floor_area_m2": 28.485,
+    "bounding_box_xz": {
+      "min_xz": [
+        -4.472345592502611,
+        -2.027306634767512
+      ],
+      "max_xz": [
+        3.4065798509819336,
+        4.4051561212462484
+      ]
+    },
+    "rooms": [
+      "room_0",
+      "room_1"
+    ]
+  },
+  "without_drift_correction": {
+    "total_floor_area_m2": 27.767,
+    "bounding_box_xz": {
+      "min_xz": [
+        -6.616951219427115,
+        -1.4541068506800692
+      ],
+      "max_xz": [
+        2.616403285585336,
+        5.463389356951176
+      ]
+    },
+    "rooms": [
+      "room_0",
+      "room_1"
+    ]
+  }
+}

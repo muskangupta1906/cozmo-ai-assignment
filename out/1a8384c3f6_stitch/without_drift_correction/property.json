@@ -1,0 +1,54 @@
+{
+  "property_name": "1a8384c3f6",
+  "source_scan": "/Users/muskangupta/Documents/M/Code/cozmo-ai/Assignment/1a8384c3f6",
+  "drift_correction": "none",
+  "rooms": [
+    "room_0",
+    "room_1",
+    "room_2"
+  ],
+  "adjacency": [
+    {
+      "rooms": [
+        "room_0",
+        "room_1"
+      ],
+      "connector_xz": [
+        -2.113348,
+        4.0724545
+      ]
+    },
+    {
+      "rooms": [
+        "room_1",
+        "room_2"
+      ],
+      "connector_xz": [
+        -2.6878734,
+        2.7994962
+      ]
+    },
+    {
+      "rooms": [
+        "room_0",
+        "room_2"
+      ],
+      "connector_xz": [
+        -1.0117872,
+        2.3430817
+      ]
+    }
+  ],
+  "total_floor_area_m2": 74.353,
+  "bounding_box_xz": {
+    "min_xz": [
+      -9.51127676644536,
+      -1.6252339772206845
+    ],
+    "max_xz": [
+      3.364796154171584,
+      9.40299714885424
+    ]
+  },
+  "confidence_note": "Room segmentation is trajectory-based (recurrence + spatial clustering), not semantic -- room IDs are arbitrary, not real room names, and a hub/junction where 3+ spaces meet can under-segment (see segment_rooms docstring). All rooms share one continuous VIO coordinate frame (one walkthrough), so no independent room-to-room registration was needed here -- that will NOT be true for independently captured photo/video-tier rooms (Phase 3/4), which need real registration. Drift correction, if enabled, is a linear translation-only loop-closure redistribution, not full pose-graph SLAM."
+}
