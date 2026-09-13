@@ -1,60 +1,68 @@
 """
 damage_detection/detect_damage.py
 ----------------------------------
-Phase 5, first increment only: per-frame damage candidate detection +
-pretrained zero-shot classification. Explicitly NOT yet doing 3D
-dedup/clustering across frames, metric extent, concealed-damage rules, or
-scope line items -- see PHASE_PLAN.md Phase 5 for the full planned
-pipeline; this is step 1+2 of it, wired end to end and smoke-tested.
+Phase 5, second increment: per-frame region proposal + a multi-view
+consistency prefilter, THEN pretrained zero-shot classification. Metric
+extent, surface (wall-index) assignment, concealed-damage rules, and scope
+line items are still not built -- see PHASE_PLAN.md Phase 5 for the full
+planned pipeline.
 
-For every sampled RGB frame in a LiDAR-tier scan:
-  1. Back-project its depth map to world points, reusing
-     reconstruct_room.backproject_frame -- the same validated math the
-     LiDAR tier already relies on for geometry -- then mask down to pixels
-     that lie near the room's known floor/ceiling/wall planes (computed
-     once from the whole scan via the same functions reconstruct_room.py
-     uses). This keeps candidate search on actual room surfaces, not
-     furniture/people/clutter.
-  2. Within that mask, find color-anomalous regions against a blurred
-     local background (classical CV, no model) -- candidate damage blobs.
-  3. Classify each candidate crop zero-shot with a pretrained CLIP model
-     (open_clip, ViT-B-32-quickgelu/openai weights -- disclosed pretrained-
-     model use, no fine-tuning, weights fetched by open_clip on first run
-     and cached) against a fixed damage-class prompt set plus a "clean
-     surface" negative prompt. Below-threshold or negative-class
-     predictions are discarded.
+Three passes over the sampled frames:
+  1. propose_all_candidates: for every frame, back-project depth to world
+     points (reusing reconstruct_room.backproject_frame), mask to pixels
+     near the room's known floor/wall/ceiling planes, and find color-
+     anomalous regions against a blurred local background (classical CV,
+     no model). Each candidate's world-space centroid is computed here --
+     classification is deliberately NOT run yet.
+  2. cluster_and_filter: DBSCAN-clusters all candidates' world centroids
+     across every sampled frame, then keeps only clusters seen from
+     >= --min-views DISTINCT frames. This is a real, load-bearing filter
+     for one specific failure mode -- a one-off artifact (motion blur,
+     a stray reflection, a sensor glitch) that only trips the detector in
+     a single frame gets dropped. It is explicitly NOT a fix for the
+     other failure mode found during manual crop review: floor-wall
+     corner shadows and floor plank/grout seams are real, fixed, repeated
+     geometric features, so they get seen from just as many distinct
+     frames as genuine damage would and survive this filter too. See
+     PHASE_PLAN.md's Phase 5 note on the crop-review finding -- fixing
+     that specifically needs geometric-edge exclusion or illumination
+     normalization, not multi-view consistency, and is not done here.
+  3. Only surviving (multi-view-consistent) candidates get classified with
+     CLIP (open_clip, ViT-B-32-quickgelu/openai weights -- disclosed
+     pretrained-model use, no fine-tuning). Classifying only survivors
+     also cuts CLIP calls roughly in proportion to how much the prefilter
+     rejects, which matters since it's the slowest step per candidate.
+     Surviving clusters are classified per-member (one CLIP call per view)
+     and merged into one detection per cluster via majority vote on class
+     + mean confidence over agreeing members -- this is real dedup, a
+     piece of the previously-deferred 3D-clustering step pulled forward
+     because clustering was already needed for the view-count filter.
 
 Output (in out_dir):
-  - damage_detections.json: every surviving detection (frame index/path,
-    surface type, pixel bbox, predicted class, confidence, world-space
-    centroid when depth was available there).
-  - frames_with_damage.json: just the frame list + classes found, for a
-    quick "does this capture have anything worth a closer look" summary.
-  - damage_plan.png: the room's footprint polygon (same geometry
-    reconstruct_room.py's room_plan.png uses) with each detection's world
-    (x, z) centroid marked and labeled by class -- a first cut at "show
-    the damage location on the room plan." No dedup yet: the same real
-    damage seen across multiple frames shows up as multiple markers here,
-    on purpose left for the 3D-clustering increment rather than silently
-    (and unvalidated-ly) merged by a guess now.
+  - damage_detections.json: one entry per surviving, classified cluster
+    (world centroid, majority class, mean confidence, view count, member
+    frame indices+bboxes, surface type).
+  - frames_with_damage.json: frame-level summary derived from the merged
+    clusters, for a quick "which frames have something worth a closer
+    look" answer.
+  - damage_plan.png: room footprint polygon with each surviving cluster's
+    world (x, z) centroid marked and labeled by class.
 
 Known limitations, honestly not fixed here (see also PHASE_PLAN.md):
   - DAMAGE_CLASSES below is a generic placeholder set, not matched to
-    whatever ends up staged in the Phase 6 damage room -- swap it in once
-    that capture exists.
-  - No ground truth exists yet to validate accuracy against. Every sample
-    scan currently in Assignment/ is an undamaged room, so a clean run
-    finding ~0 detections is the *expected*, correct result, not evidence
-    the pipeline works -- this is a mechanics smoke test only, same
-    honesty-about-data-gap as Phase 3's video tier.
-  - Classical color-anomaly region proposal will flag real but non-damage
-    high-contrast surface features (light switches, outlet covers,
-    picture-hanging marks, shadows) -- CLIP classification is the only
-    filter against that right now; no separate "is this even damage-
-    shaped" gate yet.
+    whatever ends up staged in the Phase 6 damage room.
+  - No ground truth exists yet to validate accuracy against.
+  - Corner-shadow / grout-seam false positives (found via manual crop
+    review on an earlier run) are NOT fixed by this increment -- see the
+    module docstring above and PHASE_PLAN.md.
+  - Candidates with no recoverable world position (no depth at their
+    pixel location) are dropped entirely during clustering, since view-
+    count consistency can't be checked without a location -- they never
+    reach classification, even if they'd have been real damage.
 
 Usage:
-    python damage_detection/detect_damage.py <scan_dir> <out_dir> [--every-n 15] [--conf-threshold 0.5]
+    python damage_detection/detect_damage.py <scan_dir> <out_dir> \\
+        [--every-n 15] [--conf-threshold 0.5] [--min-views 2] [--cluster-eps 0.1]
 """
 
 import os
@@ -66,6 +74,7 @@ import cv2
 import matplotlib.pyplot as plt
 from matplotlib.patches import Polygon as MplPolygon
 from PIL import Image
+from sklearn.cluster import DBSCAN
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 import reconstruct_room as rr
@@ -191,11 +200,14 @@ def propose_candidate_regions(rgb: np.ndarray, surface_mask: np.ndarray,
     return boxes
 
 
-def process_frame(rgb: np.ndarray, depth_mm: np.ndarray, conf: np.ndarray, row,
-                   fx_d, fy_d, cx_d, cy_d, us, vs, min_confidence,
-                   floor_y, ceiling_y, polygon,
-                   clip_model, clip_preprocess, text_features, classes,
-                   conf_threshold: float):
+def propose_frame_candidates(rgb: np.ndarray, depth_mm: np.ndarray, conf: np.ndarray, row,
+                              fx_d, fy_d, cx_d, cy_d, us, vs, min_confidence,
+                              floor_y, ceiling_y, polygon):
+    """
+    Pass 1 for one frame: region proposal + world-centroid lookup, no
+    classification. Returns a list of raw candidate dicts (no
+    predicted_class/confidence yet).
+    """
     depth_h, depth_w = depth_mm.shape
     rgb_h, rgb_w = rgb.shape[:2]
 
@@ -222,19 +234,8 @@ def process_frame(rgb: np.ndarray, depth_mm: np.ndarray, conf: np.ndarray, row,
         return []
 
     scale_x, scale_y = depth_w / rgb_w, depth_h / rgb_h
-    detections = []
+    candidates = []
     for (x, y, w, h) in boxes:
-        pad = int(0.1 * max(w, h))
-        x0, y0 = max(0, x - pad), max(0, y - pad)
-        x1, y1 = min(rgb_w, x + w + pad), min(rgb_h, y + h + pad)
-        crop = rgb[y0:y1, x0:x1]
-        if crop.size == 0:
-            continue
-        pred_class, pred_conf = classify_crop(clip_model, clip_preprocess, text_features,
-                                               classes, crop)
-        if pred_class == NEGATIVE_CLASS or pred_conf < conf_threshold:
-            continue
-
         cx_rgb, cy_rgb = x + w / 2.0, y + h / 2.0
         dr, dc = int(round(cy_rgb * scale_y)), int(round(cx_rgb * scale_x))
         win = world_img[max(0, dr - 2):dr + 3, max(0, dc - 2):dc + 3].reshape(-1, 3)
@@ -244,17 +245,115 @@ def process_frame(rgb: np.ndarray, depth_mm: np.ndarray, conf: np.ndarray, row,
             np.argmin(np.abs(ys[on_surface] - dr) + np.abs(xs[on_surface] - dc))
         ] if on_surface.any() else "unknown"
 
-        detections.append({
+        candidates.append({
             "bbox_px": [int(x), int(y), int(w), int(h)],
             "surface_type": str(surface_type),
-            "predicted_class": pred_class,
-            "confidence": round(pred_conf, 3),
             "world_xyz": world_xyz,
         })
-    return detections
+    return candidates
+
+
+def cluster_and_filter(candidates: list, eps: float = 0.1, min_views: int = 2):
+    """
+    DBSCAN-clusters candidates' world centroids (min_samples=1, so every
+    candidate lands in some cluster) and keeps only clusters backed by
+    >= min_views DISTINCT frames -- not just >= min_views candidates,
+    since several candidates from the SAME frame shouldn't count as
+    "multiple views." Candidates with no world position are dropped here
+    (can't check consistency without a location) -- counted and reported,
+    not silently lost.
+
+    Returns (surviving_candidates, n_dropped_no_location, n_dropped_single_view).
+    Surviving candidates get two new fields: cluster_id, cluster_view_count.
+    """
+    located = [c for c in candidates if c["world_xyz"] is not None]
+    n_dropped_no_location = len(candidates) - len(located)
+    if not located:
+        return [], n_dropped_no_location, 0
+
+    xyz = np.array([c["world_xyz"] for c in located])
+    labels = DBSCAN(eps=eps, min_samples=1).fit_predict(xyz)
+
+    clusters = {}
+    for lab, c, frame_idx in zip(labels, located, [c["frame_index"] for c in located]):
+        clusters.setdefault(int(lab), []).append(c)
+
+    surviving = []
+    n_dropped_single_view = 0
+    for lab, members in clusters.items():
+        distinct_frames = sorted(set(m["frame_index"] for m in members))
+        if len(distinct_frames) >= min_views:
+            for m in members:
+                m["cluster_id"] = lab
+                m["cluster_view_count"] = len(distinct_frames)
+            surviving.extend(members)
+        else:
+            n_dropped_single_view += len(members)
+    return surviving, n_dropped_no_location, n_dropped_single_view
+
+
+def classify_clusters(surviving_candidates: list, video_path: str,
+                       clip_model, clip_preprocess, text_features, classes,
+                       conf_threshold: float):
+    """
+    Pass 3: classifies every surviving candidate (one CLIP call per view)
+    by re-reading only the frames actually needed, then merges each
+    cluster into one detection via majority vote on class + mean
+    confidence over members that agree with the majority. A cluster
+    survives only if its majority class isn't the negative class and the
+    mean agreeing confidence clears conf_threshold.
+    """
+    by_frame = {}
+    for c in surviving_candidates:
+        by_frame.setdefault(c["frame_index"], []).append(c)
+
+    for idx, rgb in read_rgb_frames_sequential(video_path, set(by_frame.keys())):
+        for c in by_frame[idx]:
+            x, y, w, h = c["bbox_px"]
+            pad = int(0.1 * max(w, h))
+            x0, y0 = max(0, x - pad), max(0, y - pad)
+            x1, y1 = min(rgb.shape[1], x + w + pad), min(rgb.shape[0], y + h + pad)
+            crop = rgb[y0:y1, x0:x1]
+            if crop.size == 0:
+                c["predicted_class"], c["confidence"] = NEGATIVE_CLASS, 0.0
+                continue
+            c["predicted_class"], c["confidence"] = classify_crop(
+                clip_model, clip_preprocess, text_features, classes, crop)
+
+    by_cluster = {}
+    for c in surviving_candidates:
+        by_cluster.setdefault(c["cluster_id"], []).append(c)
+
+    merged = []
+    for cluster_id, members in by_cluster.items():
+        class_votes = {}
+        for m in members:
+            class_votes.setdefault(m["predicted_class"], []).append(m["confidence"])
+        majority_class = max(class_votes, key=lambda k: len(class_votes[k]))
+        if majority_class == NEGATIVE_CLASS:
+            continue
+        mean_conf = float(np.mean(class_votes[majority_class]))
+        if mean_conf < conf_threshold:
+            continue
+        xyz = np.mean([m["world_xyz"] for m in members], axis=0).tolist()
+        surface_types = [m["surface_type"] for m in members]
+        merged.append({
+            "cluster_id": cluster_id,
+            "predicted_class": majority_class,
+            "confidence": round(mean_conf, 3),
+            "view_count": members[0]["cluster_view_count"],
+            "surface_type": max(set(surface_types), key=surface_types.count),
+            "world_xyz": xyz,
+            "members": [{"frame_index": m["frame_index"], "bbox_px": m["bbox_px"],
+                         "predicted_class": m["predicted_class"],
+                         "confidence": round(m["confidence"], 3)} for m in members],
+        })
+    return merged
 
 
 def read_rgb_frames_sequential(video_path: str, wanted_indices: set):
+    if not wanted_indices:
+        return
     cap = cv2.VideoCapture(video_path)
     i = 0
     wanted_max = max(wanted_indices)
@@ -269,17 +368,14 @@ def read_rgb_frames_sequential(video_path: str, wanted_indices: set):
 
 
 def run(scan_dir: str, out_dir: str, every_n: int = 15, conf_threshold: float = 0.5,
-        min_confidence: int = 2):
+        min_confidence: int = 2, min_views: int = 2, cluster_eps: float = 0.1):
     os.makedirs(out_dir, exist_ok=True)
 
-    print("[1/4] Computing room geometry (floor/ceiling/footprint)...")
+    print("[1/5] Computing room geometry (floor/ceiling/footprint)...")
     pcd = rr.build_fused_point_cloud(scan_dir, min_confidence=min_confidence)
     floor_y, ceiling_y, height, height_conf = rr.detect_floor_and_ceiling(pcd)
     polygon = rr.extract_wall_footprint(pcd, floor_y, ceiling_y)
     print(f"      floor_y={floor_y:.3f} ceiling_y={ceiling_y:.3f} height={height:.3f}m")
-
-    print("[2/4] Loading pretrained CLIP model (open_clip, disclosed pretrained use)...")
-    clip_model, clip_preprocess, text_features, classes = load_clip()
 
     K = load_intrinsics(scan_dir)
     fx, fy, cx, cy = K[0, 0], K[1, 1], K[0, 2], K[1, 2]
@@ -296,11 +392,11 @@ def run(scan_dir: str, out_dir: str, every_n: int = 15, conf_threshold: float = 
     us, vs = np.meshgrid(np.arange(depth_w), np.arange(depth_h))
 
     frame_indices = list(range(0, n, every_n))
-    print(f"[3/4] Scanning {len(frame_indices)} frames (every {every_n}) for damage candidates...")
-
-    all_detections = []
-    frames_with_damage = []
     video_path = os.path.join(scan_dir, "rgb.mp4")
+
+    print(f"[2/5] Pass 1/3: proposing candidate regions across {len(frame_indices)} frames "
+          f"(no classification yet)...")
+    raw_candidates = []
     for idx, rgb in read_rgb_frames_sequential(video_path, set(frame_indices)):
         if rgb.shape[:2] != (rgb_h, rgb_w):
             rgb = cv2.resize(rgb, (rgb_w, rgb_h))
@@ -311,46 +407,69 @@ def run(scan_dir: str, out_dir: str, every_n: int = 15, conf_threshold: float = 
             conf = rr.cv2_resize_nn(conf, depth_w, depth_h)
         row = odo.iloc[idx]
 
-        dets = process_frame(rgb, depth_mm, conf, row, fx_d, fy_d, cx_d, cy_d, us, vs,
-                              min_confidence, floor_y, ceiling_y, polygon,
-                              clip_model, clip_preprocess, text_features, classes,
-                              conf_threshold)
-        if dets:
-            for d in dets:
-                d["frame_index"] = idx
-            all_detections.extend(dets)
-            frames_with_damage.append({
-                "frame_index": idx,
-                "classes_found": sorted(set(d["predicted_class"] for d in dets)),
-                "detection_count": len(dets),
-            })
-            print(f"      frame {idx}: {len(dets)} candidate(s) -> "
-                  f"{[d['predicted_class'] for d in dets]}")
+        cands = propose_frame_candidates(rgb, depth_mm, conf, row, fx_d, fy_d, cx_d, cy_d,
+                                          us, vs, min_confidence, floor_y, ceiling_y, polygon)
+        for c in cands:
+            c["frame_index"] = idx
+        raw_candidates.extend(cands)
+    print(f"      {len(raw_candidates)} raw candidates before any filtering")
 
-    print(f"[4/4] Writing outputs ({len(all_detections)} detections across "
-          f"{len(frames_with_damage)}/{len(frame_indices)} frames)...")
+    print(f"[3/5] Pass 2/3: clustering in 3D, requiring >= {min_views} distinct-frame "
+          f"views (eps={cluster_eps}m)...")
+    surviving, n_no_loc, n_single_view = cluster_and_filter(
+        raw_candidates, eps=cluster_eps, min_views=min_views)
+    print(f"      {len(surviving)} candidates survive the view-count filter "
+          f"({n_no_loc} dropped: no depth at centroid, "
+          f"{n_single_view} dropped: single-view only)")
+
+    print(f"[4/5] Pass 3/3: classifying {len(surviving)} surviving candidates with CLIP "
+          f"(open_clip, disclosed pretrained use)...")
+    clip_model, clip_preprocess, text_features, classes = load_clip()
+    detections = classify_clusters(surviving, video_path, clip_model, clip_preprocess,
+                                    text_features, classes, conf_threshold)
+    for d in detections:
+        print(f"      cluster {d['cluster_id']} ({d['view_count']} views, "
+              f"{d['surface_type']}): {d['predicted_class']} (conf {d['confidence']})")
+
+    frames_with_damage = []
+    for d in detections:
+        for m in d["members"]:
+            frames_with_damage.append({
+                "frame_index": m["frame_index"],
+                "cluster_id": d["cluster_id"],
+                "predicted_class": d["predicted_class"],
+            })
+    frames_with_damage.sort(key=lambda x: x["frame_index"])
+
+    print(f"[5/5] Writing outputs ({len(detections)} merged detections, "
+          f"{len(frames_with_damage)} frame sightings)...")
     with open(os.path.join(out_dir, "damage_detections.json"), "w") as f:
-        json.dump(all_detections, f, indent=2)
+        json.dump(detections, f, indent=2)
     with open(os.path.join(out_dir, "frames_with_damage.json"), "w") as f:
         json.dump({
             "scan_dir": os.path.abspath(scan_dir),
             "frames_scanned": len(frame_indices),
-            "frames_with_damage": frames_with_damage,
+            "raw_candidates_before_filtering": len(raw_candidates),
+            "dropped_no_location": n_no_loc,
+            "dropped_single_view": n_single_view,
+            "surviving_before_classification": len(surviving),
+            "merged_detections": len(detections),
+            "frame_sightings": frames_with_damage,
             "damage_classes_considered": DAMAGE_CLASSES,
             "confidence_note": (
                 "Placeholder damage-class vocabulary, not matched to real staged "
-                "damage yet. No dedup across frames -- the same real damage seen "
-                "in multiple frames appears as multiple entries here. CLIP "
-                "classification (open_clip, ViT-B-32-quickgelu, openai weights) "
-                "is the only filter on classical color-anomaly region proposals; "
-                "not validated against ground truth."
+                "damage yet. Multi-view consistency filter (>= min_views distinct "
+                "frames at the same 3D location) removes one-off/transient false "
+                "positives but does NOT remove fixed geometric false positives "
+                "(floor-wall corner shadows, floor plank/grout seams) -- those are "
+                "real, repeated features and survive this filter too. See "
+                "PHASE_PLAN.md Phase 5 for the crop-review finding this doesn't fix."
             ),
         }, f, indent=2)
 
-    render_damage_plan(polygon, all_detections,
-                        os.path.join(out_dir, "damage_plan.png"),
+    render_damage_plan(polygon, detections, os.path.join(out_dir, "damage_plan.png"),
                         os.path.basename(os.path.normpath(scan_dir)))
-    return all_detections, frames_with_damage
+    return detections, frames_with_damage
 
 
 def render_damage_plan(polygon: np.ndarray, detections: list, out_path: str, room_name: str):
@@ -361,13 +480,14 @@ def render_damage_plan(polygon: np.ndarray, detections: list, out_path: str, roo
 
     class_colors = {}
     cmap = plt.get_cmap("tab10")
-    located = [d for d in detections if d.get("world_xyz") is not None]
-    for d in located:
+    for d in detections:
         cls = d["predicted_class"]
         if cls not in class_colors:
             class_colors[cls] = cmap(len(class_colors) % 10)
         x, _, z = d["world_xyz"]
-        ax.scatter([x], [z], c=[class_colors[cls]], s=60, marker="x", zorder=5)
+        ax.scatter([x], [z], c=[class_colors[cls]], s=80, marker="x", zorder=5)
+        ax.annotate(f"{d['view_count']}v", (x, z), fontsize=6, xytext=(3, 3),
+                    textcoords="offset points")
 
     handles = [plt.Line2D([0], [0], marker="x", color=c, linestyle="", label=cls)
                for cls, c in class_colors.items()]
@@ -380,10 +500,8 @@ def render_damage_plan(polygon: np.ndarray, detections: list, out_path: str, roo
     ax.set_aspect("equal")
     ax.set_xlabel("x (m)")
     ax.set_ylabel("z (m)")
-    n_unlocated = len(detections) - len(located)
-    title = f"{room_name} -- damage locations ({len(located)} shown"
-    title += f", {n_unlocated} unlocated: no depth at centroid)" if n_unlocated else ")"
-    ax.set_title(title)
+    ax.set_title(f"{room_name} -- damage locations ({len(detections)} multi-view-"
+                 f"consistent clusters, view count annotated)")
     plt.tight_layout()
     plt.savefig(out_path, dpi=150)
     plt.close(fig)
@@ -398,9 +516,16 @@ def main():
                           "geometry-fusion stride, which stays at reconstruct_room.py's default).")
     ap.add_argument("--conf-threshold", type=float, default=0.5)
     ap.add_argument("--min-confidence", type=int, default=2)
+    ap.add_argument("--min-views", type=int, default=2,
+                     help="A candidate must be seen at the same 3D location from this many "
+                          "distinct frames to survive the prefilter before classification.")
+    ap.add_argument("--cluster-eps", type=float, default=0.1,
+                     help="DBSCAN radius (meters) for grouping candidates into the same "
+                          "real-world location.")
     args = ap.parse_args()
     run(args.scan_dir, args.out_dir, every_n=args.every_n,
-        conf_threshold=args.conf_threshold, min_confidence=args.min_confidence)
+        conf_threshold=args.conf_threshold, min_confidence=args.min_confidence,
+        min_views=args.min_views, cluster_eps=args.cluster_eps)
 
 
 if __name__ == "__main__":

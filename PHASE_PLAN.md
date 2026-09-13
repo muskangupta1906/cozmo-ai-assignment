@@ -40,12 +40,16 @@ agent at the end of a session.
   weak/fragmented registration, most likely because its sweep-heavy capture motion
   (built for LiDAR coverage) isn't representative of a steady photogrammetry
   walkthrough. See Phase 3 below before doing more work here blind.
-- Phase 5 (damage detection) started: `damage_detection/detect_damage.py` does
-  per-frame candidate region proposal + pretrained CLIP zero-shot classification
-  (steps 1-2 of the planned pipeline only), runs end-to-end, but classification isn't
-  discriminating well yet on real (undamaged) surface texture — flagged, not fixed
-  blind, pending Phase 6 real damage data. Dedup, metric extent, concealed-damage
-  rules, and scope line items are the explicit next increment.
+- Phase 5 (damage detection) in progress: `damage_detection/detect_damage.py` does
+  region proposal -> multi-view consistency prefilter (DBSCAN cluster + require
+  >=2 distinct-frame views) -> CLIP zero-shot classification, merging survivors into
+  one detection per cluster. Manually inspected actual detection crops and confirmed
+  the "damage" found on a real undamaged room is false positives (corner shadows,
+  floor seams) — the multi-view filter cleaned up the output (162 dupes -> 7 merged
+  detections) but, as predicted before implementing it, did NOT remove those specific
+  false positives since they're real fixed geometric features seen from many angles
+  too. Geometric-edge exclusion is the next candidate fix, not yet done. Metric extent,
+  concealed-damage rules, and scope line items remain the explicit next increment.
 - Phase 4 (photo tier) built and smoke-tested: `reconstruct_room_photo.py` (metric
   monocular depth + feature-matched RANSAC-Kabsch registration, reusing the LiDAR
   tier's floor/ceiling/footprint/opening code) and `stitch_property_photo.py`
@@ -356,11 +360,12 @@ session) since photo tier has no dependency on it.
       so this module reuses the exact same validated depth->world-point math instead of
       duplicating it — re-verified `reconstruct_room.py` still produces the same output
       after the refactor (ceiling height 2.11m on `c00a170fe1`, unchanged).
-- [x] Wired to output: `damage_detections.json` (every surviving detection: frame,
-      surface type, pixel bbox, class, confidence, world xyz), `frames_with_damage.json`
-      (frame-level summary), and `damage_plan.png` (room footprint polygon + marked
-      damage locations, colored/labeled by class — first cut at "show damage on the
-      room plan," no dedup so the same real damage across frames = multiple markers).
+- [x] Wired to output (now cluster-merged, see the multi-view prefilter bullet below):
+      `damage_detections.json` (one entry per surviving cluster — world xyz, majority
+      class, mean confidence, view count, member frames+bboxes), `frames_with_damage.json`
+      (frame-level sightings derived from the merged clusters), and `damage_plan.png`
+      (room footprint polygon + one marker per cluster, labeled by class with view
+      count annotated).
 - [x] Smoke-tested on `c00a170fe1` (undamaged real room, no ground truth available —
       same honesty-about-data-gap as Phase 3): runs end to end, 162 detections across
       80/115 sampled frames, all output artifacts well-formed. **Calibration finding,
@@ -381,6 +386,33 @@ session) since photo tier has no dependency on it.
       full planned pipeline shape.
 - [ ] Photo tier's damage-detection path is out of scope here (photo tier itself is
       being built in a separate session) — revisit once that pipeline exists.
+- **Note on the shadow/seam false-positive finding (2026-09-13)**: inspected actual
+  detection crops (not just the JSON) from the `c00a170fe1` smoke test and confirmed
+  the 162 "detections" are false positives — floor-wall corner shadows, door-frame
+  shadows, and floor plank/tile grout seams, not real damage. Root cause: the color-
+  anomaly region proposal fires on any sharp local contrast gradient, which is exactly
+  what those normal geometric features look like; CLIP doesn't reliably reject them
+  because a shadow/seam edge is visually "thin and linear," which reads as "scuff or
+  scratch mark" (see the confidence-clustered-near-threshold pattern above). Fixing
+  this is real, valuable engineering — but per Phase 9's fix-loop scope note below,
+  it's **not** eligible to be the official Part 4 fix-loop submission (damage detection
+  has no numeric gate), so implement it as ordinary iteration, not as "the" fix loop.
+- [x] **Implemented the multi-view consistency prefilter (option 1)**, restructured as
+      3 passes: propose candidates across all frames with no classification yet ->
+      DBSCAN-cluster by world position and keep only clusters seen from
+      `--min-views` (default 2) distinct frames -> classify only survivors with CLIP,
+      merging each surviving cluster into one detection via majority-vote class + mean
+      confidence. Re-ran on `c00a170fe1`: 1191 raw candidates -> 980 survived the
+      view-count filter -> merged into 7 final detections (down from the previous
+      run's 162 unmerged entries). **Confirmed the predicted limitation**: only 210/1191
+      candidates were dropped as single-view noise — corner shadows and grout seams are
+      real, fixed geometric features, so they get seen from just as many distinct
+      frames as genuine damage would, and pass this filter too. Net effect: this fix
+      made the OUTPUT much cleaner (real dedup, 162->7, a piece of the previously-
+      deferred 3D-clustering step pulled forward) but did NOT fix the accuracy problem
+      found via crop review — still all "scuff or scratch mark" at confidence just
+      above threshold. Geometric-edge exclusion or illumination normalization remains
+      the real candidate fix for that, not yet implemented.
 
 ## Phase 6 — Benchmark set construction (own captures, own ground truth)
 
@@ -408,6 +440,30 @@ Required composition — none of this exists yet:
       tie on ≥70% of shared dimensions.
 
 ## Phase 9 — Fix loop (25% of score, Part 4)
+
+**Mechanics, from `Applied AI.pdf` (Part 4) — reference this before picking the
+candidate, don't just wing it from memory:**
+1. One-page fix declaration, written BEFORE shipping the fix: (a) the single
+   worst-performing **gate** in your own benchmark, with the actual failing number;
+   (b) root-cause hypothesis + the evidence for it; (c) the fix you intend to ship +
+   the number you predict after it.
+2. Then ship the fix. Final submission needs the before run AND the after run, both
+   **regenerable by the grader**, plus a readable diff.
+3. Scoring is unusually honesty-sensitive: correct root cause + shipped fix + gate
+   flips fail→pass = full marks. Real improvement short of the gate = majority marks
+   IF the report explains why it fell short. A badly-wrong prediction still earns
+   credit for an honest post-mortem, zero for the prediction itself. Analysis with no
+   shipped fix = **zero**, regardless of quality. A fix with no regenerable before/after
+   = **zero**, regardless of whether it worked.
+
+**Scope constraint, easy to get wrong**: the candidate MUST be one of the numerically
+**gated** Round-1 metrics (ceiling height ≤1.5cm, opening widths ≤2cm/≥85%,
+repeatability ≤1cm/0.5%, drift accountability, photo-tier stitch ±8%) — "worst-
+performing gate" means a gate, not just any bug found during dev. Damage detection
+(Phase 5) has no numeric gate in the spec (scored via output-contract presence
+instead), so improvements there — e.g. the shadow/seam false-positive fix — are good
+engineering but **not eligible** to be this deliverable. Don't spend the one official
+fix-loop submission on a non-gated finding, however real.
 
 - [ ] Identify the single worst-performing gate from Phase 7's real numbers (the
       ceiling-height bug flagged above is a strong early candidate, but confirm against
