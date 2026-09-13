@@ -4,6 +4,11 @@
 #
 # Also requires ffmpeg on PATH (video-tier frame extraction) -- not a pip
 # package: `brew install ffmpeg` (macOS) or `apt install ffmpeg` (Linux).
+#
+# damage_detection/detect_damage.py uses a pretrained CLIP model (open_clip,
+# ViT-B-32-quickgelu/openai weights) fetched by open_clip on first run and
+# cached locally (~350MB, needs network access once) -- disclosed pretrained
+# model use per the case study's constraints, not a custom-trained model.
 
 numpy==2.2.6
 pandas==2.3.3
@@ -13,3 +18,6 @@ matplotlib==3.10.9
 opencv-python-headless==5.0.0.93
 open3d==0.19.0
 pycolmap==4.2.0
+pillow==12.3.0
+torch==2.14.0
+open_clip_torch==3.3.0
