@@ -41,11 +41,40 @@ this produces.
 
 import os
 import sys
+import glob
 import shutil
 import subprocess
 import argparse
 import numpy as np
 import pycolmap
+
+VIDEO_EXTS = (".mp4", ".mov")
+
+
+def find_video_file(scan_dir: str) -> str:
+    """Locates the capture's video file. Checks, in order: `rgb.mp4` (the
+    LiDAR-tier export's fixed name, kept so a Stray Scanner folder's own RGB
+    track can still be used as a stand-in per PHASE_PLAN's Phase 3 notes),
+    then any single video file directly in scan_dir or in a `video/`
+    subfolder (the shape docs/capture_protocol.md's Handoff section
+    specifies for a real video-tier capture: `Assignment/<room>/video/`)."""
+    rgb_mp4 = os.path.join(scan_dir, "rgb.mp4")
+    if os.path.exists(rgb_mp4):
+        return rgb_mp4
+    candidates = []
+    for d in (scan_dir, os.path.join(scan_dir, "video")):
+        if os.path.isdir(d):
+            for ext in VIDEO_EXTS:
+                candidates.extend(glob.glob(os.path.join(d, f"*{ext}")))
+                candidates.extend(glob.glob(os.path.join(d, f"*{ext.upper()}")))
+    if not candidates:
+        raise FileNotFoundError(
+            f"No video file found in {scan_dir} or {scan_dir}/video/ "
+            f"(looked for rgb.mp4 and *.mp4/*.mov)")
+    if len(candidates) > 1:
+        print(f"      NOTE: {len(candidates)} video files found in {scan_dir}, "
+              f"using the first one: {sorted(candidates)[0]}")
+    return sorted(candidates)[0]
 
 
 def extract_frames(video_path: str, out_dir: str, fps: float = 2.0):
@@ -188,9 +217,7 @@ def estimate_scale(reconstruction: pycolmap.Reconstruction,
 def reconstruct_video(scan_dir: str, out_dir: str, fps: float = 2.0,
                        assumed_camera_height_m: float = 1.4):
     os.makedirs(out_dir, exist_ok=True)
-    video_path = os.path.join(scan_dir, "rgb.mp4")
-    if not os.path.exists(video_path):
-        raise FileNotFoundError(f"No rgb.mp4 in {scan_dir}")
+    video_path = find_video_file(scan_dir)
 
     print("[1/4] Extracting frames...")
     image_dir = extract_frames(video_path, os.path.join(out_dir, "frames"), fps=fps)
