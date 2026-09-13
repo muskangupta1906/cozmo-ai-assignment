@@ -1,0 +1,2756 @@
+[
+  {
+    "bbox_px": [
+      1549,
+      849,
+      79,
+      29
+    ],
+    "surface_type": "wall",
+    "predicted_class": "scuff or scratch mark",
+    "confidence": 0.556,
+    "world_xyz": [
+      -0.7930148839950562,
+      -1.1491665840148926,
+      -0.49540412425994873
+    ],
+    "frame_index": 0
+  },
+  {
+    "bbox_px": [
+      1286,
+      870,
+      109,
+      8
+    ],
+    "surface_type": "wall",
+    "predicted_class": "scuff or scratch mark",
+    "confidence": 0.526,
+    "world_xyz": [
+      -0.7784082293510437,
+      -0.8399304747581482,
+      -0.4534671902656555
+    ],
+    "frame_index": 15
+  },
+  {
+    "bbox_px": [
+      238,
+      882,
+      415,
+      26
+    ],
+    "surface_type": "wall",
+    "predicted_class": "scuff or scratch mark",
+    "confidence": 0.51,
+    "world_xyz": [
+      -0.8448501825332642,
+      -0.16991987824440002,
+      -0.5331342816352844
+    ],
+    "frame_index": 15
+  },
+  {
+    "bbox_px": [
+      1505,
+      843,
+      70,
+      25
+    ],
+    "surface_type": "wall",
+    "predicted_class": "scuff or scratch mark",
+    "confidence": 0.54,
+    "world_xyz": [
+      -0.8277723789215088,
+      -1.1592793464660645,
+      -0.5255356431007385
+    ],
+    "frame_index": 30
+  },
+  {
+    "bbox_px": [
+      37,
+      1217,
+      38,
+      193
+    ],
+    "surface_type": "wall",
+    "predicted_class": "scuff or scratch mark",
+    "confidence": 0.516,
+    "world_xyz": [
+      -0.9216082692146301,
+      -0.024582989513874054,
+      -0.48824217915534973
+    ],
+    "frame_index": 45
+  },
+  {
+    "bbox_px": [
+      1305,
+      124,
+      88,
+      142
+    ],
+    "surface_type": "wall",
+    "predicted_class": "scuff or scratch mark",
+    "confidence": 0.509,
+    "world_xyz": [
+      0.051116399466991425,
+      -1.3657176494598389,
+      -1.214237928390503
+    ],
+    "frame_index": 60
+  },
+  {
+    "bbox_px": [
+      1009,
+      1125,
+      52,
+      40
+    ],
+    "surface_type": "wall",
+    "predicted_class": "scuff or scratch mark",
+    "confidence": 0.531,
+    "world_xyz": [
+      -0.5531502366065979,
+      -0.6255941390991211,
+      -0.516964316368103
+    ],
+    "frame_index": 60
+  },
+  {
+    "bbox_px": [
+      1027,
+      648,
+      327,
+      27
+    ],
+    "surface_type": "wall",
+    "predicted_class": "scuff or scratch mark",
+    "confidence": 0.535,
+    "world_xyz": [
+      -0.02688872441649437,
+      -1.0727289915084839,
+      -1.2097232341766357
+    ],
+    "frame_index": 90
+  },
+  {
+    "bbox_px": [
+      8,
+      653,
+      1395,
+      39
+    ],
+    "surface_type": "wall",
+    "predicted_class": "scuff or scratch mark",
+    "confidence": 0.58,
+    "world_xyz": [
+      -0.05479150637984276,
+      -0.5583055019378662,
+      -1.2617419958114624
+    ],
+    "frame_index": 105
+  },
+  {
+    "bbox_px": [
+      110,
+      607,
+      1394,
+      37
+    ],
+    "surface_type": "wall",
+    "predicted_class": "scuff or scratch mark",
+    "confidence": 0.511,
+    "world_xyz": [
+      -0.05102181062102318,
+      -0.5881595015525818,
+      -1.2636027336120605
+    ],
+    "frame_index": 120
+  },
+  {
+    "bbox_px": [
+      1861,
+      688,
+      59,
+      83
+    ],
+    "surface_type": "floor",
+    "predicted_class": "scuff or scratch mark",
+    "confidence": 0.734,
+    "world_xyz": [
+      -0.008681421168148518,
+      -1.4629896879196167,
+      -0.9873378872871399
+    ],
+    "frame_index": 150
+  },
+  {
+    "bbox_px": [
+      1268,
+      577,
+      130,
+      53
+    ],
+    "surface_type": "wall",
+    "predicted_class": "scuff or scratch mark",
+    "confidence": 0.615,
+    "world_xyz": [
+      -0.38162732124328613,
+      -1.3519130945205688,
+      -1.3833521604537964
+    ],
+    "frame_index": 165
+  },
+  {
+    "bbox_px": [
+      943,
+      8,
+      45,
+      217
+    ],
+    "surface_type": "wall",
+    "predicted_class": "scuff or scratch mark",
+    "confidence": 0.517,
+    "world_xyz": [
+      2.274355888366699,
+      -0.6616802215576172,
+      0.5545885562896729
+    ],
+    "frame_index": 300
+  },
+  {
+    "bbox_px": [
+      1440,
+      1297,
+      45,
+      128
+    ],
+    "surface_type": "wall",
+    "predicted_class": "scuff or scratch mark",
+    "confidence": 0.544,
+    "world_xyz": [
+      2.2276387214660645,
+      -0.9492051601409912,
+      -0.22693945467472076
+    ],
+    "frame_index": 315
+  },
+  {
+    "bbox_px": [
+      225,
+      8,
+      30,
+      190
+    ],
+    "surface_type": "wall",
+    "predicted_class": "scuff or scratch mark",
+    "confidence": 0.555,
+    "world_xyz": [
+      1.9189753532409668,
+      -0.07638394087553024,
+      1.5612863302230835
+    ],
+    "frame_index": 330
+  },
+  {
+    "bbox_px": [
+      778,
+      15,
+      65,
+      129
+    ],
+    "surface_type": "wall",
+    "predicted_class": "scuff or scratch mark",
+    "confidence": 0.558,
+    "world_xyz": [
+      1.8324851989746094,
+      -0.6696294546127319,
+      1.6096818447113037
+    ],
+    "frame_index": 330
+  },
+  {
+    "bbox_px": [
+      901,
+      753,
+      22,
+      42
+    ],
+    "surface_type": "wall",
+    "predicted_class": "scuff or scratch mark",
+    "confidence": 0.515,
+    "world_xyz": [
+      2.119145631790161,
+      -0.6534146070480347,
+      0.841224193572998
+    ],
+    "frame_index": 330
+  },
+  {
+    "bbox_px": [
+      709,
+      191,
+      131,
+      436
+    ],
+    "surface_type": "wall",
+    "predicted_class": "scuff or scratch mark",
+    "confidence": 0.514,
+    "world_xyz": [
+      1.7234731912612915,
+      -0.6770138740539551,
+      1.8349699974060059
+    ],
+    "frame_index": 345
+  },
+  {
+    "bbox_px": [
+      830,
+      639,
+      138,
+      404
+    ],
+    "surface_type": "wall",
+    "predicted_class": "scuff or scratch mark",
+    "confidence": 0.53,
+    "world_xyz": [
+      2.0101189613342285,
+      -0.7242910265922546,
+      1.3139690160751343
+    ],
+    "frame_index": 345
+  },
+  {
+    "bbox_px": [
+      233,
+      774,
+      81,
+      325
+    ],
+    "surface_type": "wall",
+    "predicted_class": "scuff or scratch mark",
+    "confidence": 0.557,
+    "world_xyz": [
+      2.0038444995880127,
+      -0.03836213797330856,
+      1.2519140243530273
+    ],
+    "frame_index": 345
+  },
+  {
+    "bbox_px": [
+      291,
+      1068,
+      18,
+      81
+    ],
+    "surface_type": "wall",
+    "predicted_class": "scuff or scratch mark",
+    "confidence": 0.553,
+    "world_xyz": [
+      1.9052321910858154,
+      -0.07783615589141846,
+      1.5782251358032227
+    ],
+    "frame_index": 360
+  },
+  {
+    "bbox_px": [
+      157,
+      1239,
+      167,
+      201
+    ],
+    "surface_type": "wall",
+    "predicted_class": "scuff or scratch mark",
+    "confidence": 0.548,
+    "world_xyz": [
+      1.9782135486602783,
+      -0.0031890117097646,
+      1.335123896598816
+    ],
+    "frame_index": 360
+  },
+  {
+    "bbox_px": [
+      1686,
+      1142,
+      155,
+      184
+    ],
+    "surface_type": "floor",
+    "predicted_class": "scuff or scratch mark",
+    "confidence": 0.538,
+    "world_xyz": [
+      1.0413931608200073,
+      -1.4360902309417725,
+      1.280277967453003
+    ],
+    "frame_index": 405
+  },
+  {
+    "bbox_px": [
+      1853,
+      1339,
+      67,
+      75
+    ],
+    "surface_type": "floor",
+    "predicted_class": "scuff or scratch mark",
+    "confidence": 0.508,
+    "world_xyz": [
+      1.104032039642334,
+      -1.443313479423523,
+      1.1339393854141235
+    ],
+    "frame_index": 405
+  },
+  {
+    "bbox_px": [
+      1365,
+      870,
+      170,
+      188
+    ],
+    "surface_type": "floor",
+    "predicted_class": "scuff or scratch mark",
+    "confidence": 0.551,
+    "world_xyz": [
+      0.8542627692222595,
+      -1.4445537328720093,
+      1.7607355117797852
+    ],
+    "frame_index": 420
+  },
+  {
+    "bbox_px": [
+      1793,
+      1332,
+      38,
+      45
+    ],
+    "surface_type": "floor",
+    "predicted_class": "scuff or scratch mark",
+    "confidence": 0.526,
+    "world_xyz": [
+      1.0319550037384033,
+      -1.4468870162963867,
+      1.2979122400283813
+    ],
+    "frame_index": 435
+  },
+  {
+    "bbox_px": [
+      692,
+      1341,
+      144,
+      99
+    ],
+    "surface_type": "wall",
+    "predicted_class": "scuff or scratch mark",
+    "confidence": 0.53,
+    "world_xyz": [
+      1.554874062538147,
+      -0.7826940417289734,
+      2.21444034576416
+    ],
+    "frame_index": 435
+  },
+  {
+    "bbox_px": [
+      607,
+      1188,
+      166,
+      252
+    ],
+    "surface_type": "wall",
+    "predicted_class": "scuff or scratch mark",
+    "confidence": 0.505,
+    "world_xyz": [
+      1.4914937019348145,
+      -0.6967763304710388,
+      2.007657051086426
+    ],
+    "frame_index": 450
+  },
+  {
+    "bbox_px": [
+      837,
+      748,
+      63,
+      77
+    ],
+    "surface_type": "wall",
+    "predicted_class": "scuff or scratch mark",
+    "confidence": 0.511,
+    "world_xyz": [
+      1.3856043815612793,
+      -1.122627854347229,
+      2.5101284980773926
+    ],
+    "frame_index": 480
+  },
+  {
+    "bbox_px": [
+      833,
+      720,
+      63,
+      37
+    ],
+    "surface_type": "wall",
+    "predicted_class": "scuff or scratch mark",
+    "confidence": 0.523,
+    "world_xyz": [
+      1.4307959079742432,
+      -1.2734663486480713,
+      2.6438663005828857
+    ],
+    "frame_index": 495
+  },
+  {
+    "bbox_px": [
+      722,
+      740,
+      81,
+      86
+    ],
+    "surface_type": "wall",
+    "predicted_class": "scuff or scratch mark",
+    "confidence": 0.506,
+    "world_xyz": [
+      1.4290084838867188,
+      -0.9923884868621826,
+      2.3755273818969727
+    ],
+    "frame_index": 510
+  },
+  {
+    "bbox_px": [
+      1410,
+      562,
+      151,
+      878
+    ],
+    "surface_type": "floor",
+    "predicted_class": "scuff or scratch mark",
+    "confidence": 0.57,
+    "world_xyz": [
+      0.9231274127960205,
+      -1.4519025087356567,
+      1.6601916551589966
+    ],
+    "frame_index": 525
+  },
+  {
+    "bbox_px": [
+      704,
+      677,
+      39,
+      138
+    ],
+    "surface_type": "wall",
+    "predicted_class": "scuff or scratch mark",
+    "confidence": 0.57,
+    "world_xyz": [
+      1.501985788345337,
+      -0.9578335285186768,
+      2.3167269229888916
+    ],
+    "frame_index": 525
+  },
+  {
+    "bbox_px": [
+      1433,
+      619,
+      121,
+      821
+    ],
+    "surface_type": "floor",
+    "predicted_class": "scuff or scratch mark",
+    "confidence": 0.603,
+    "world_xyz": [
+      0.9307321310043335,
+      -1.4579815864562988,
+      1.6501634120941162
+    ],
+    "frame_index": 540
+  },
+  {
+    "bbox_px": [
+      692,
+      704,
+      43,
+      144
+    ],
+    "surface_type": "wall",
+    "predicted_class": "scuff or scratch mark",
+    "confidence": 0.557,
+    "world_xyz": [
+      1.5479518175125122,
+      -0.9637960195541382,
+      2.313178300857544
+    ],
+    "frame_index": 540
+  },
+  {
+    "bbox_px": [
+      543,
+      994,
+      57,
+      146
+    ],
+    "surface_type": "wall",
+    "predicted_class": "scuff or scratch mark",
+    "confidence": 0.533,
+    "world_xyz": [
+      1.5853817462921143,
+      -0.977241575717926,
+      2.3188650608062744
+    ],
+    "frame_index": 555
+  },
+  {
+    "bbox_px": [
+      359,
+      1203,
+      102,
+      237
+    ],
+    "surface_type": "wall",
+    "predicted_class": "scuff or scratch mark",
+    "confidence": 0.624,
+    "world_xyz": [
+      1.5763641595840454,
+      -0.6852906942367554,
+      2.0554137229919434
+    ],
+    "frame_index": 555
+  },
+  {
+    "bbox_px": [
+      1619,
+      358,
+      185,
+      43
+    ],
+    "surface_type": "floor",
+    "predicted_class": "scuff or scratch mark",
+    "confidence": 0.548,
+    "world_xyz": [
+      -0.891964316368103,
+      -1.466331124305725,
+      1.588070034980774
+    ],
+    "frame_index": 600
+  },
+  {
+    "bbox_px": [
+      525,
+      667,
+      60,
+      53
+    ],
+    "surface_type": "floor",
+    "predicted_class": "scuff or scratch mark",
+    "confidence": 0.558,
+    "world_xyz": [
+      -1.4948982000350952,
+      -1.4609746932983398,
+      3.3087081909179688
+    ],
+    "frame_index": 600
+  },
+  {
+    "bbox_px": [
+      376,
+      375,
+      97,
+      191
+    ],
+    "surface_type": "wall",
+    "predicted_class": "scuff or scratch mark",
+    "confidence": 0.575,
+    "world_xyz": [
+      -2.7534356117248535,
+      -1.396452784538269,
+      2.9015204906463623
+    ],
+    "frame_index": 615
+  },
+  {
+    "bbox_px": [
+      413,
+      375,
+      76,
+      165
+    ],
+    "surface_type": "floor",
+    "predicted_class": "scuff or scratch mark",
+    "confidence": 0.502,
+    "world_xyz": [
+      -2.7789947986602783,
+      -1.4459725618362427,
+      2.8879470825195312
+    ],
+    "frame_index": 615
+  },
+  {
+    "bbox_px": [
+      1650,
+      445,
+      72,
+      169
+    ],
+    "surface_type": "floor",
+    "predicted_class": "scuff or scratch mark",
+    "confidence": 0.521,
+    "world_xyz": [
+      -1.0304193496704102,
+      -1.4699206352233887,
+      1.4290543794631958
+    ],
+    "frame_index": 615
+  },
+  {
+    "bbox_px": [
+      1649,
+      986,
+      38,
+      57
+    ],
+    "surface_type": "floor",
+    "predicted_class": "scuff or scratch mark",
+    "confidence": 0.566,
+    "world_xyz": [
+      -0.7473102807998657,
+      -1.4468961954116821,
+      1.7193940877914429
+    ],
+    "frame_index": 615
+  },
+  {
+    "bbox_px": [
+      481,
+      705,
+      31,
+      95
+    ],
+    "surface_type": "wall",
+    "predicted_class": "scuff or scratch mark",
+    "confidence": 0.585,
+    "world_xyz": [
+      -2.731471061706543,
+      -1.377002239227295,
+      2.8918683528900146
+    ],
+    "frame_index": 630
+  },
+  {
+    "bbox_px": [
+      8,
+      893,
+      40,
+      21
+    ],
+    "surface_type": "wall",
+    "predicted_class": "scuff or scratch mark",
+    "confidence": 0.502,
+    "world_xyz": [
+      -2.4054622650146484,
+      -0.41322413086891174,
+      2.8896350860595703
+    ],
+    "frame_index": 645
+  },
+  {
+    "bbox_px": [
+      1158,
+      1235,
+      669,
+      33
+    ],
+    "surface_type": "floor",
+    "predicted_class": "scuff or scratch mark",
+    "confidence": 0.502,
+    "world_xyz": [
+      -0.9365612864494324,
+      -1.424242377281189,
+      2.134389877319336
+    ],
+    "frame_index": 660
+  },
+  {
+    "bbox_px": [
+      975,
+      1261,
+      117,
+      43
+    ],
+    "surface_type": "floor",
+    "predicted_class": "scuff or scratch mark",
+    "confidence": 0.559,
+    "world_xyz": [
+      -1.208009958267212,
+      -1.3869872093200684,
+      2.7680115699768066
+    ],
+    "frame_index": 660
+  },
+  {
+    "bbox_px": [
+      1433,
+      8,
+      76,
+      45
+    ],
+    "surface_type": "wall",
+    "predicted_class": "scuff or scratch mark",
+    "confidence": 0.542,
+    "world_xyz": [
+      -1.7890591621398926,
+      -1.3525691032409668,
+      1.5708625316619873
+    ],
+    "frame_index": 675
+  },
+  {
+    "bbox_px": [
+      908,
+      1140,
+      239,
+      83
+    ],
+    "surface_type": "floor",
+    "predicted_class": "scuff or scratch mark",
+    "confidence": 0.509,
+    "world_xyz": [
+      -1.2149286270141602,
+      -1.360436201095581,
+      2.844967842102051
+    ],
+    "frame_index": 675
+  },
+  {
+    "bbox_px": [
+      54,
+      1216,
+      507,
+      140
+    ],
+    "surface_type": "wall",
+    "predicted_class": "scuff or scratch mark",
+    "confidence": 0.654,
+    "world_xyz": [
+      -1.4839460849761963,
+      -0.63966965675354,
+      3.3859353065490723
+    ],
+    "frame_index": 675
+  },
+  {
+    "bbox_px": [
+      923,
+      946,
+      31,
+      30
+    ],
+    "surface_type": "floor",
+    "predicted_class": "scuff or scratch mark",
+    "confidence": 0.508,
+    "world_xyz": [
+      -1.5137851238250732,
+      -1.4514667987823486,
+      3.2670373916625977
+    ],
+    "frame_index": 690
+  },
+  {
+    "bbox_px": [
+      19,
+      1038,
+      674,
+      138
+    ],
+    "surface_type": "wall",
+    "predicted_class": "scuff or scratch mark",
+    "confidence": 0.519,
+    "world_xyz": [
+      -1.4848127365112305,
+      -0.6068286299705505,
+      3.356581211090088
+    ],
+    "frame_index": 690
+  },
+  {
+    "bbox_px": [
+      23,
+      869,
+      833,
+      113
+    ],
+    "surface_type": "wall",
+    "predicted_class": "scuff or scratch mark",
+    "confidence": 0.532,
+    "world_xyz": [
+      -1.474034070968628,
+      -0.5859943628311157,
+      3.367518424987793
+    ],
+    "frame_index": 705
+  },
+  {
+    "bbox_px": [
+      914,
+      35,
+      69,
+      27
+    ],
+    "surface_type": "wall",
+    "predicted_class": "scuff or scratch mark",
+    "confidence": 0.532,
+    "world_xyz": [
+      -2.3913724422454834,
+      -1.2385746240615845,
+      2.905179738998413
+    ],
+    "frame_index": 720
+  },
+  {
+    "bbox_px": [
+      1148,
+      8,
+      37,
+      108
+    ],
+    "surface_type": "floor",
+    "predicted_class": "scuff or scratch mark",
+    "confidence": 0.547,
+    "world_xyz": [
+      -2.666158437728882,
+      -1.4600127935409546,
+      2.9027631282806396
+    ],
+    "frame_index": 735
+  },
+  {
+    "bbox_px": [
+      1106,
+      15,
+      11,
+      85
+    ],
+    "surface_type": "wall",
+    "predicted_class": "scuff or scratch mark",
+    "confidence": 0.512,
+    "world_xyz": [
+      -2.667867422103882,
+      -1.380553126335144,
+      2.930987596511841
+    ],
+    "frame_index": 735
+  },
+  {
+    "bbox_px": [
+      270,
+      20,
+      108,
+      34
+    ],
+    "surface_type": "wall",
+    "predicted_class": "scuff or scratch mark",
+    "confidence": 0.611,
+    "world_xyz": [
+      -2.383984327316284,
+      -0.3786383867263794,
+      2.9052982330322266
+    ],
+    "frame_index": 735
+  },
+  {
+    "bbox_px": [
+      1380,
+      168,
+      43,
+      531
+    ],
+    "surface_type": "floor",
+    "predicted_class": "scuff or scratch mark",
+    "confidence": 0.588,
+    "world_xyz": [
+      -2.0593860149383545,
+      -1.471164345741272,
+      2.9860525131225586
+    ],
+    "frame_index": 750
+  },
+  {
+    "bbox_px": [
+      1073,
+      1144,
+      248,
+      63
+    ],
+    "surface_type": "floor",
+    "predicted_class": "scuff or scratch mark",
+    "confidence": 0.504,
+    "world_xyz": [
+      -1.2666553258895874,
+      -1.483533501625061,
+      3.645486831665039
+    ],
+    "frame_index": 750
+  },
+  {
+    "bbox_px": [
+      1514,
+      73,
+      91,
+      532
+    ],
+    "surface_type": "floor",
+    "predicted_class": "scuff or scratch mark",
+    "confidence": 0.503,
+    "world_xyz": [
+      -2.093987226486206,
+      -1.4677000045776367,
+      2.975600481033325
+    ],
+    "frame_index": 765
+  },
+  {
+    "bbox_px": [
+      1674,
+      8,
+      96,
+      477
+    ],
+    "surface_type": "floor",
+    "predicted_class": "scuff or scratch mark",
+    "confidence": 0.595,
+    "world_xyz": [
+      -2.049081802368164,
+      -1.4731007814407349,
+      2.990840196609497
+    ],
+    "frame_index": 780
+  },
+  {
+    "bbox_px": [
+      1149,
+      520,
+      70,
+      50
+    ],
+    "surface_type": "wall",
+    "predicted_class": "scuff or scratch mark",
+    "confidence": 0.555,
+    "world_xyz": [
+      -1.524815320968628,
+      -0.6234506368637085,
+      3.2104129791259766
+    ],
+    "frame_index": 825
+  },
+  {
+    "bbox_px": [
+      543,
+      1342,
+      282,
+      91
+    ],
+    "surface_type": "wall",
+    "predicted_class": "scuff or scratch mark",
+    "confidence": 0.586,
+    "world_xyz": [
+      0.648306667804718,
+      -1.1150102615356445,
+      4.6328816413879395
+    ],
+    "frame_index": 870
+  },
+  {
+    "bbox_px": [
+      1665,
+      351,
+      255,
+      63
+    ],
+    "surface_type": "floor",
+    "predicted_class": "scuff or scratch mark",
+    "confidence": 0.527,
+    "world_xyz": [
+      -1.1940290927886963,
+      -1.4723002910614014,
+      3.7414801120758057
+    ],
+    "frame_index": 885
+  },
+  {
+    "bbox_px": [
+      23,
+      705,
+      286,
+      17
+    ],
+    "surface_type": "wall",
+    "predicted_class": "scuff or scratch mark",
+    "confidence": 0.511,
+    "world_xyz": [
+      0.5781177878379822,
+      -0.23120613396167755,
+      4.847104549407959
+    ],
+    "frame_index": 915
+  },
+  {
+    "bbox_px": [
+      8,
+      906,
+      562,
+      30
+    ],
+    "surface_type": "wall",
+    "predicted_class": "scuff or scratch mark",
+    "confidence": 0.558,
+    "world_xyz": [
+      0.7829139232635498,
+      -0.4083669185638428,
+      4.6283392906188965
+    ],
+    "frame_index": 915
+  },
+  {
+    "bbox_px": [
+      822,
+      961,
+      66,
+      257
+    ],
+    "surface_type": "wall",
+    "predicted_class": "scuff or scratch mark",
+    "confidence": 0.501,
+    "world_xyz": [
+      0.8905299305915833,
+      -1.2693060636520386,
+      4.337161064147949
+    ],
+    "frame_index": 915
+  },
+  {
+    "bbox_px": [
+      478,
+      675,
+      70,
+      62
+    ],
+    "surface_type": "wall",
+    "predicted_class": "scuff or scratch mark",
+    "confidence": 0.518,
+    "world_xyz": [
+      0.44933661818504333,
+      -0.553678035736084,
+      5.078934192657471
+    ],
+    "frame_index": 930
+  },
+  {
+    "bbox_px": [
+      8,
+      1024,
+      345,
+      64
+    ],
+    "surface_type": "wall",
+    "predicted_class": "scuff or scratch mark",
+    "confidence": 0.584,
+    "world_xyz": [
+      0.5740225315093994,
+      -0.03296250104904175,
+      4.784581184387207
+    ],
+    "frame_index": 975
+  },
+  {
+    "bbox_px": [
+      217,
+      630,
+      34,
+      41
+    ],
+    "surface_type": "wall",
+    "predicted_class": "scuff or scratch mark",
+    "confidence": 0.662,
+    "world_xyz": [
+      0.40177905559539795,
+      -0.10674206912517548,
+      5.083414077758789
+    ],
+    "frame_index": 990
+  },
+  {
+    "bbox_px": [
+      1206,
+      644,
+      63,
+      159
+    ],
+    "surface_type": "floor",
+    "predicted_class": "scuff or scratch mark",
+    "confidence": 0.562,
+    "world_xyz": [
+      0.3503211736679077,
+      -1.5120817422866821,
+      4.846541881561279
+    ],
+    "frame_index": 990
+  },
+  {
+    "bbox_px": [
+      182,
+      1014,
+      273,
+      36
+    ],
+    "surface_type": "wall",
+    "predicted_class": "scuff or scratch mark",
+    "confidence": 0.561,
+    "world_xyz": [
+      0.6352554559707642,
+      -0.1842425912618637,
+      4.636309623718262
+    ],
+    "frame_index": 990
+  },
+  {
+    "bbox_px": [
+      1186,
+      548,
+      51,
+      112
+    ],
+    "surface_type": "floor",
+    "predicted_class": "scuff or scratch mark",
+    "confidence": 0.581,
+    "world_xyz": [
+      0.326565146446228,
+      -1.5129660367965698,
+      4.948233604431152
+    ],
+    "frame_index": 1005
+  },
+  {
+    "bbox_px": [
+      1218,
+      666,
+      40,
+      69
+    ],
+    "surface_type": "floor",
+    "predicted_class": "scuff or scratch mark",
+    "confidence": 0.746,
+    "world_xyz": [
+      0.3882168233394623,
+      -1.5054404735565186,
+      4.804559707641602
+    ],
+    "frame_index": 1005
+  },
+  {
+    "bbox_px": [
+      880,
+      1408,
+      95,
+      25
+    ],
+    "surface_type": "wall",
+    "predicted_class": "scuff or scratch mark",
+    "confidence": 0.525,
+    "world_xyz": [
+      0.9322150945663452,
+      -0.8903176188468933,
+      4.071183681488037
+    ],
+    "frame_index": 1005
+  },
+  {
+    "bbox_px": [
+      1214,
+      390,
+      78,
+      222
+    ],
+    "surface_type": "floor",
+    "predicted_class": "scuff or scratch mark",
+    "confidence": 0.527,
+    "world_xyz": [
+      0.329995721578598,
+      -1.5033494234085083,
+      4.884067535400391
+    ],
+    "frame_index": 1020
+  },
+  {
+    "bbox_px": [
+      563,
+      423,
+      34,
+      37
+    ],
+    "surface_type": "wall",
+    "predicted_class": "scuff or scratch mark",
+    "confidence": 0.604,
+    "world_xyz": [
+      0.41882696747779846,
+      -0.542661190032959,
+      5.094236850738525
+    ],
+    "frame_index": 1020
+  },
+  {
+    "bbox_px": [
+      594,
+      517,
+      21,
+      23
+    ],
+    "surface_type": "wall",
+    "predicted_class": "scuff or scratch mark",
+    "confidence": 0.518,
+    "world_xyz": [
+      0.46799373626708984,
+      -0.568411648273468,
+      4.978450298309326
+    ],
+    "frame_index": 1020
+  },
+  {
+    "bbox_px": [
+      130,
+      792,
+      327,
+      27
+    ],
+    "surface_type": "wall",
+    "predicted_class": "scuff or scratch mark",
+    "confidence": 0.518,
+    "world_xyz": [
+      0.625612735748291,
+      -0.15812762081623077,
+      4.651660919189453
+    ],
+    "frame_index": 1020
+  },
+  {
+    "bbox_px": [
+      1310,
+      189,
+      49,
+      122
+    ],
+    "surface_type": "floor",
+    "predicted_class": "scuff or scratch mark",
+    "confidence": 0.675,
+    "world_xyz": [
+      0.27679726481437683,
+      -1.5083444118499756,
+      4.986545085906982
+    ],
+    "frame_index": 1035
+  },
+  {
+    "bbox_px": [
+      624,
+      222,
+      34,
+      40
+    ],
+    "surface_type": "wall",
+    "predicted_class": "scuff or scratch mark",
+    "confidence": 0.514,
+    "world_xyz": [
+      0.42400193214416504,
+      -0.5415441989898682,
+      5.099749565124512
+    ],
+    "frame_index": 1035
+  },
+  {
+    "bbox_px": [
+      653,
+      325,
+      23,
+      25
+    ],
+    "surface_type": "wall",
+    "predicted_class": "scuff or scratch mark",
+    "confidence": 0.537,
+    "world_xyz": [
+      0.4766422212123871,
+      -0.5649612545967102,
+      4.970655918121338
+    ],
+    "frame_index": 1035
+  },
+  {
+    "bbox_px": [
+      1363,
+      773,
+      33,
+      223
+    ],
+    "surface_type": "wall",
+    "predicted_class": "scuff or scratch mark",
+    "confidence": 0.508,
+    "world_xyz": [
+      0.888344943523407,
+      -1.379037618637085,
+      3.9877817630767822
+    ],
+    "frame_index": 1050
+  },
+  {
+    "bbox_px": [
+      1245,
+      169,
+      22,
+      125
+    ],
+    "surface_type": "wall",
+    "predicted_class": "scuff or scratch mark",
+    "confidence": 0.513,
+    "world_xyz": [
+      0.7721309661865234,
+      -1.2709956169128418,
+      4.50225830078125
+    ],
+    "frame_index": 1065
+  },
+  {
+    "bbox_px": [
+      723,
+      1265,
+      58,
+      33
+    ],
+    "surface_type": "wall",
+    "predicted_class": "scuff or scratch mark",
+    "confidence": 0.517,
+    "world_xyz": [
+      1.0675925016403198,
+      -0.5848159790039062,
+      3.3567731380462646
+    ],
+    "frame_index": 1065
+  },
+  {
+    "bbox_px": [
+      1290,
+      15,
+      121,
+      312
+    ],
+    "surface_type": "wall",
+    "predicted_class": "scuff or scratch mark",
+    "confidence": 0.587,
+    "world_xyz": [
+      0.8810160160064697,
+      -1.2497782707214355,
+      4.276127815246582
+    ],
+    "frame_index": 1080
+  },
+  {
+    "bbox_px": [
+      1808,
+      8,
+      45,
+      105
+    ],
+    "surface_type": "wall",
+    "predicted_class": "scuff or scratch mark",
+    "confidence": 0.647,
+    "world_xyz": [
+      0.8531823754310608,
+      -1.3840545415878296,
+      3.9457039833068848
+    ],
+    "frame_index": 1095
+  },
+  {
+    "bbox_px": [
+      1119,
+      116,
+      203,
+      57
+    ],
+    "surface_type": "wall",
+    "predicted_class": "scuff or scratch mark",
+    "confidence": 0.686,
+    "world_xyz": [
+      0.877773642539978,
+      -0.7413333058357239,
+      3.8495545387268066
+    ],
+    "frame_index": 1095
+  },
+  {
+    "bbox_px": [
+      1384,
+      85,
+      141,
+      103
+    ],
+    "surface_type": "wall",
+    "predicted_class": "scuff or scratch mark",
+    "confidence": 0.518,
+    "world_xyz": [
+      0.8618946075439453,
+      -0.6556714773178101,
+      3.8127682209014893
+    ],
+    "frame_index": 1140
+  },
+  {
+    "bbox_px": [
+      445,
+      924,
+      86,
+      466
+    ],
+    "surface_type": "wall",
+    "predicted_class": "scuff or scratch mark",
+    "confidence": 0.547,
+    "world_xyz": [
+      0.5649108290672302,
+      -0.1589769721031189,
+      4.708672523498535
+    ],
+    "frame_index": 1170
+  },
+  {
+    "bbox_px": [
+      289,
+      711,
+      15,
+      122
+    ],
+    "surface_type": "wall",
+    "predicted_class": "scuff or scratch mark",
+    "confidence": 0.543,
+    "world_xyz": [
+      -0.4439290761947632,
+      -0.16059283912181854,
+      5.108485698699951
+    ],
+    "frame_index": 1185
+  },
+  {
+    "bbox_px": [
+      305,
+      894,
+      12,
+      98
+    ],
+    "surface_type": "wall",
+    "predicted_class": "scuff or scratch mark",
+    "confidence": 0.558,
+    "world_xyz": [
+      -0.33275115489959717,
+      -0.1566653549671173,
+      5.1543192863464355
+    ],
+    "frame_index": 1185
+  },
+  {
+    "bbox_px": [
+      1775,
+      1276,
+      145,
+      124
+    ],
+    "surface_type": "floor",
+    "predicted_class": "scuff or scratch mark",
+    "confidence": 0.614,
+    "world_xyz": [
+      0.2527335286140442,
+      -1.5064877271652222,
+      5.140755653381348
+    ],
+    "frame_index": 1185
+  },
+  {
+    "bbox_px": [
+      405,
+      74,
+      69,
+      103
+    ],
+    "surface_type": "wall",
+    "predicted_class": "scuff or scratch mark",
+    "confidence": 0.624,
+    "world_xyz": [
+      -1.6130731105804443,
+      -0.40496835112571716,
+      4.631625175476074
+    ],
+    "frame_index": 1200
+  },
+  {
+    "bbox_px": [
+      1759,
+      377,
+      103,
+      95
+    ],
+    "surface_type": "floor",
+    "predicted_class": "scuff or scratch mark",
+    "confidence": 0.507,
+    "world_xyz": [
+      -1.0168156623840332,
+      -1.4961084127426147,
+      4.4812188148498535
+    ],
+    "frame_index": 1200
+  },
+  {
+    "bbox_px": [
+      1598,
+      408,
+      26,
+      36
+    ],
+    "surface_type": "floor",
+    "predicted_class": "scuff or scratch mark",
+    "confidence": 0.684,
+    "world_xyz": [
+      -1.1551270484924316,
+      -1.4568029642105103,
+      4.600413799285889
+    ],
+    "frame_index": 1200
+  },
+  {
+    "bbox_px": [
+      1668,
+      536,
+      16,
+      69
+    ],
+    "surface_type": "floor",
+    "predicted_class": "scuff or scratch mark",
+    "confidence": 0.502,
+    "world_xyz": [
+      -1.01589035987854,
+      -1.4795030355453491,
+      4.664707183837891
+    ],
+    "frame_index": 1200
+  },
+  {
+    "bbox_px": [
+      704,
+      758,
+      26,
+      39
+    ],
+    "surface_type": "wall",
+    "predicted_class": "scuff or scratch mark",
+    "confidence": 0.535,
+    "world_xyz": [
+      -1.0194227695465088,
+      -0.5116190910339355,
+      4.815375804901123
+    ],
+    "frame_index": 1200
+  },
+  {
+    "bbox_px": [
+      1230,
+      218,
+      23,
+      30
+    ],
+    "surface_type": "wall",
+    "predicted_class": "scuff or scratch mark",
+    "confidence": 0.572,
+    "world_xyz": [
+      -1.8633012771606445,
+      -1.353320598602295,
+      4.200931072235107
+    ],
+    "frame_index": 1215
+  },
+  {
+    "bbox_px": [
+      1867,
+      513,
+      15,
+      66
+    ],
+    "surface_type": "floor",
+    "predicted_class": "scuff or scratch mark",
+    "confidence": 0.504,
+    "world_xyz": [
+      -1.10808527469635,
+      -1.4898988008499146,
+      4.194021701812744
+    ],
+    "frame_index": 1215
+  },
+  {
+    "bbox_px": [
+      1583,
+      807,
+      59,
+      47
+    ],
+    "surface_type": "floor",
+    "predicted_class": "scuff or scratch mark",
+    "confidence": 0.616,
+    "world_xyz": [
+      -1.1812793016433716,
+      -1.473085641860962,
+      4.566524505615234
+    ],
+    "frame_index": 1215
+  },
+  {
+    "bbox_px": [
+      1658,
+      865,
+      30,
+      52
+    ],
+    "surface_type": "floor",
+    "predicted_class": "scuff or scratch mark",
+    "confidence": 0.517,
+    "world_xyz": [
+      -1.108988642692566,
+      -1.499362826347351,
+      4.590890884399414
+    ],
+    "frame_index": 1215
+  },
+  {
+    "bbox_px": [
+      1725,
+      1245,
+      128,
+      60
+    ],
+    "surface_type": "floor",
+    "predicted_class": "scuff or scratch mark",
+    "confidence": 0.519,
+    "world_xyz": [
+      -0.8038036823272705,
+      -1.4468175172805786,
+      4.7855448722839355
+    ],
+    "frame_index": 1215
+  },
+  {
+    "bbox_px": [
+      1581,
+      453,
+      113,
+      50
+    ],
+    "surface_type": "floor",
+    "predicted_class": "scuff or scratch mark",
+    "confidence": 0.545,
+    "world_xyz": [
+      -1.4246313571929932,
+      -1.3902907371520996,
+      4.052283763885498
+    ],
+    "frame_index": 1230
+  },
+  {
+    "bbox_px": [
+      1823,
+      557,
+      97,
+      103
+    ],
+    "surface_type": "floor",
+    "predicted_class": "scuff or scratch mark",
+    "confidence": 0.508,
+    "world_xyz": [
+      -1.2294321060180664,
+      -1.4926426410675049,
+      4.096728324890137
+    ],
+    "frame_index": 1230
+  },
+  {
+    "bbox_px": [
+      418,
+      953,
+      76,
+      107
+    ],
+    "surface_type": "wall",
+    "predicted_class": "scuff or scratch mark",
+    "confidence": 0.571,
+    "world_xyz": [
+      -1.6545512676239014,
+      -0.4167519807815552,
+      4.590674877166748
+    ],
+    "frame_index": 1230
+  },
+  {
+    "bbox_px": [
+      1658,
+      1025,
+      71,
+      71
+    ],
+    "surface_type": "floor",
+    "predicted_class": "scuff or scratch mark",
+    "confidence": 0.585,
+    "world_xyz": [
+      -1.1953850984573364,
+      -1.4816648960113525,
+      4.561908721923828
+    ],
+    "frame_index": 1230
+  },
+  {
+    "bbox_px": [
+      585,
+      1256,
+      14,
+      62
+    ],
+    "surface_type": "wall",
+    "predicted_class": "scuff or scratch mark",
+    "confidence": 0.565,
+    "world_xyz": [
+      -1.3978075981140137,
+      -0.4552711546421051,
+      4.681029319763184
+    ],
+    "frame_index": 1230
+  },
+  {
+    "bbox_px": [
+      539,
+      1219,
+      91,
+      136
+    ],
+    "surface_type": "wall",
+    "predicted_class": "scuff or scratch mark",
+    "confidence": 0.521,
+    "world_xyz": [
+      -1.6059106588363647,
+      -0.41461658477783203,
+      4.577873229980469
+    ],
+    "frame_index": 1260
+  },
+  {
+    "bbox_px": [
+      1379,
+      858,
+      39,
+      33
+    ],
+    "surface_type": "wall",
+    "predicted_class": "scuff or scratch mark",
+    "confidence": 0.507,
+    "world_xyz": [
+      -1.917901635169983,
+      -1.3683987855911255,
+      4.464165210723877
+    ],
+    "frame_index": 1275
+  },
+  {
+    "bbox_px": [
+      1770,
+      308,
+      86,
+      82
+    ],
+    "surface_type": "floor",
+    "predicted_class": "scuff or scratch mark",
+    "confidence": 0.507,
+    "world_xyz": [
+      -1.9746267795562744,
+      -1.5165290832519531,
+      4.221010208129883
+    ],
+    "frame_index": 1305
+  },
+  {
+    "bbox_px": [
+      680,
+      1037,
+      101,
+      72
+    ],
+    "surface_type": "wall",
+    "predicted_class": "scuff or scratch mark",
+    "confidence": 0.665,
+    "world_xyz": [
+      -1.612497091293335,
+      -0.4300607740879059,
+      4.568941116333008
+    ],
+    "frame_index": 1305
+  },
+  {
+    "bbox_px": [
+      1776,
+      568,
+      51,
+      62
+    ],
+    "surface_type": "wall",
+    "predicted_class": "scuff or scratch mark",
+    "confidence": 0.512,
+    "world_xyz": [
+      -1.8614734411239624,
+      -1.1822136640548706,
+      4.498696804046631
+    ],
+    "frame_index": 1320
+  },
+  {
+    "bbox_px": [
+      1079,
+      1188,
+      151,
+      252
+    ],
+    "surface_type": "wall",
+    "predicted_class": "scuff or scratch mark",
+    "confidence": 0.587,
+    "world_xyz": [
+      -1.4355660676956177,
+      -0.4978446960449219,
+      4.719540596008301
+    ],
+    "frame_index": 1320
+  },
+  {
+    "bbox_px": [
+      1176,
+      1389,
+      14,
+      51
+    ],
+    "surface_type": "wall",
+    "predicted_class": "scuff or scratch mark",
+    "confidence": 0.573,
+    "world_xyz": [
+      -1.372004508972168,
+      -0.507305383682251,
+      4.7439494132995605
+    ],
+    "frame_index": 1320
+  },
+  {
+    "bbox_px": [
+      668,
+      1063,
+      48,
+      377
+    ],
+    "surface_type": "wall",
+    "predicted_class": "scuff or scratch mark",
+    "confidence": 0.548,
+    "world_xyz": [
+      -1.771740436553955,
+      -0.4405515789985657,
+      3.683842658996582
+    ],
+    "frame_index": 1395
+  },
+  {
+    "bbox_px": [
+      698,
+      1067,
+      47,
+      373
+    ],
+    "surface_type": "wall",
+    "predicted_class": "scuff or scratch mark",
+    "confidence": 0.516,
+    "world_xyz": [
+      -1.763361930847168,
+      -0.4499576687812805,
+      3.687284231185913
+    ],
+    "frame_index": 1395
+  },
+  {
+    "bbox_px": [
+      301,
+      268,
+      31,
+      74
+    ],
+    "surface_type": "floor",
+    "predicted_class": "scuff or scratch mark",
+    "confidence": 0.51,
+    "world_xyz": [
+      -2.6489500999450684,
+      -1.47648024559021,
+      1.5058114528656006
+    ],
+    "frame_index": 1410
+  },
+  {
+    "bbox_px": [
+      681,
+      991,
+      287,
+      151
+    ],
+    "surface_type": "wall",
+    "predicted_class": "scuff or scratch mark",
+    "confidence": 0.58,
+    "world_xyz": [
+      -1.3996210098266602,
+      -0.4984814524650574,
+      3.2616260051727295
+    ],
+    "frame_index": 1410
+  },
+  {
+    "bbox_px": [
+      374,
+      820,
+      79,
+      58
+    ],
+    "surface_type": "floor",
+    "predicted_class": "scuff or scratch mark",
+    "confidence": 0.538,
+    "world_xyz": [
+      -2.604341745376587,
+      -1.4602670669555664,
+      1.545408010482788
+    ],
+    "frame_index": 1425
+  },
+  {
+    "bbox_px": [
+      1427,
+      1120,
+      205,
+      199
+    ],
+    "surface_type": "wall",
+    "predicted_class": "scuff or scratch mark",
+    "confidence": 0.536,
+    "world_xyz": [
+      -1.4981955289840698,
+      -1.0597037076950073,
+      3.183300256729126
+    ],
+    "frame_index": 1425
+  },
+  {
+    "bbox_px": [
+      90,
+      1318,
+      40,
+      53
+    ],
+    "surface_type": "floor",
+    "predicted_class": "scuff or scratch mark",
+    "confidence": 0.561,
+    "world_xyz": [
+      -4.789141654968262,
+      -1.4807772636413574,
+      0.8006616234779358
+    ],
+    "frame_index": 1425
+  },
+  {
+    "bbox_px": [
+      1667,
+      504,
+      55,
+      63
+    ],
+    "surface_type": "floor",
+    "predicted_class": "scuff or scratch mark",
+    "confidence": 0.508,
+    "world_xyz": [
+      -1.2118749618530273,
+      -1.4680367708206177,
+      2.6923835277557373
+    ],
+    "frame_index": 1440
+  },
+  {
+    "bbox_px": [
+      1764,
+      627,
+      40,
+      56
+    ],
+    "surface_type": "floor",
+    "predicted_class": "scuff or scratch mark",
+    "confidence": 0.528,
+    "world_xyz": [
+      -1.254826307296753,
+      -1.4642170667648315,
+      2.800776481628418
+    ],
+    "frame_index": 1440
+  },
+  {
+    "bbox_px": [
+      833,
+      772,
+      27,
+      45
+    ],
+    "surface_type": "floor",
+    "predicted_class": "scuff or scratch mark",
+    "confidence": 0.586,
+    "world_xyz": [
+      -2.021754264831543,
+      -1.4529255628585815,
+      1.963263750076294
+    ],
+    "frame_index": 1440
+  },
+  {
+    "bbox_px": [
+      432,
+      1044,
+      71,
+      41
+    ],
+    "surface_type": "floor",
+    "predicted_class": "scuff or scratch mark",
+    "confidence": 0.508,
+    "world_xyz": [
+      -3.1505985260009766,
+      -1.4628233909606934,
+      1.3045419454574585
+    ],
+    "frame_index": 1440
+  },
+  {
+    "bbox_px": [
+      1608,
+      312,
+      46,
+      88
+    ],
+    "surface_type": "floor",
+    "predicted_class": "scuff or scratch mark",
+    "confidence": 0.52,
+    "world_xyz": [
+      -1.3290842771530151,
+      -1.4714759588241577,
+      2.4810469150543213
+    ],
+    "frame_index": 1455
+  },
+  {
+    "bbox_px": [
+      1667,
+      454,
+      34,
+      72
+    ],
+    "surface_type": "floor",
+    "predicted_class": "scuff or scratch mark",
+    "confidence": 0.513,
+    "world_xyz": [
+      -1.3760788440704346,
+      -1.4689956903457642,
+      2.595515489578247
+    ],
+    "frame_index": 1455
+  },
+  {
+    "bbox_px": [
+      8,
+      594,
+      262,
+      81
+    ],
+    "surface_type": "wall",
+    "predicted_class": "scuff or scratch mark",
+    "confidence": 0.63,
+    "world_xyz": [
+      -2.074814796447754,
+      -0.5705255270004272,
+      1.9584110975265503
+    ],
+    "frame_index": 1455
+  },
+  {
+    "bbox_px": [
+      304,
+      611,
+      365,
+      34
+    ],
+    "surface_type": "wall",
+    "predicted_class": "scuff or scratch mark",
+    "confidence": 0.506,
+    "world_xyz": [
+      -2.065300703048706,
+      -0.8801048994064331,
+      1.98139226436615
+    ],
+    "frame_index": 1455
+  },
+  {
+    "bbox_px": [
+      1184,
+      797,
+      35,
+      93
+    ],
+    "surface_type": "floor",
+    "predicted_class": "scuff or scratch mark",
+    "confidence": 0.553,
+    "world_xyz": [
+      -1.9852033853530884,
+      -1.4782909154891968,
+      2.4613044261932373
+    ],
+    "frame_index": 1455
+  },
+  {
+    "bbox_px": [
+      60,
+      1024,
+      113,
+      29
+    ],
+    "surface_type": "wall",
+    "predicted_class": "scuff or scratch mark",
+    "confidence": 0.517,
+    "world_xyz": [
+      -4.773275852203369,
+      -1.2161591053009033,
+      0.6960346698760986
+    ],
+    "frame_index": 1455
+  },
+  {
+    "bbox_px": [
+      1632,
+      1119,
+      288,
+      43
+    ],
+    "surface_type": "floor",
+    "predicted_class": "scuff or scratch mark",
+    "confidence": 0.57,
+    "world_xyz": [
+      -1.7073603868484497,
+      -1.468685507774353,
+      3.0152175426483154
+    ],
+    "frame_index": 1455
+  },
+  {
+    "bbox_px": [
+      291,
+      174,
+      244,
+      49
+    ],
+    "surface_type": "wall",
+    "predicted_class": "scuff or scratch mark",
+    "confidence": 0.637,
+    "world_xyz": [
+      -2.0248045921325684,
+      -0.5063932538032532,
+      1.9563429355621338
+    ],
+    "frame_index": 1470
+  },
+  {
+    "bbox_px": [
+      460,
+      649,
+      45,
+      43
+    ],
+    "surface_type": "floor",
+    "predicted_class": "scuff or scratch mark",
+    "confidence": 0.531,
+    "world_xyz": [
+      -4.648065567016602,
+      -1.4727712869644165,
+      0.7319589257240295
+    ],
+    "frame_index": 1470
+  },
+  {
+    "bbox_px": [
+      1043,
+      187,
+      73,
+      16
+    ],
+    "surface_type": "wall",
+    "predicted_class": "scuff or scratch mark",
+    "confidence": 0.517,
+    "world_xyz": [
+      -2.1273598670959473,
+      -0.9751591086387634,
+      1.946007490158081
+    ],
+    "frame_index": 1485
+  },
+  {
+    "bbox_px": [
+      885,
+      359,
+      33,
+      48
+    ],
+    "surface_type": "floor",
+    "predicted_class": "scuff or scratch mark",
+    "confidence": 0.51,
+    "world_xyz": [
+      -3.117922782897949,
+      -1.489011526107788,
+      1.3633792400360107
+    ],
+    "frame_index": 1485
+  },
+  {
+    "bbox_px": [
+      1900,
+      8,
+      8,
+      184
+    ],
+    "surface_type": "floor",
+    "predicted_class": "scuff or scratch mark",
+    "confidence": 0.561,
+    "world_xyz": [
+      -1.8425239324569702,
+      -1.4816666841506958,
+      2.1233952045440674
+    ],
+    "frame_index": 1500
+  },
+  {
+    "bbox_px": [
+      15,
+      93,
+      27,
+      35
+    ],
+    "surface_type": "wall",
+    "predicted_class": "scuff or scratch mark",
+    "confidence": 0.509,
+    "world_xyz": [
+      -4.500229835510254,
+      -0.5295712947845459,
+      0.09486981481313705
+    ],
+    "frame_index": 1500
+  },
+  {
+    "bbox_px": [
+      334,
+      472,
+      84,
+      8
+    ],
+    "surface_type": "wall",
+    "predicted_class": "scuff or scratch mark",
+    "confidence": 0.568,
+    "world_xyz": [
+      -4.809602737426758,
+      -1.2028206586837769,
+      0.7320845723152161
+    ],
+    "frame_index": 1500
+  },
+  {
+    "bbox_px": [
+      1812,
+      33,
+      77,
+      28
+    ],
+    "surface_type": "floor",
+    "predicted_class": "scuff or scratch mark",
+    "confidence": 0.5,
+    "world_xyz": [
+      -2.0431082248687744,
+      -1.4709283113479614,
+      1.980833888053894
+    ],
+    "frame_index": 1515
+  },
+  {
+    "bbox_px": [
+      1606,
+      1238,
+      59,
+      22
+    ],
+    "surface_type": "wall",
+    "predicted_class": "scuff or scratch mark",
+    "confidence": 0.512,
+    "world_xyz": [
+      -2.6883764266967773,
+      -1.3337582349777222,
+      2.8007357120513916
+    ],
+    "frame_index": 1530
+  },
+  {
+    "bbox_px": [
+      555,
+      209,
+      45,
+      38
+    ],
+    "surface_type": "floor",
+    "predicted_class": "scuff or scratch mark",
+    "confidence": 0.502,
+    "world_xyz": [
+      -4.740611553192139,
+      -1.4753565788269043,
+      0.731315553188324
+    ],
+    "frame_index": 1545
+  },
+  {
+    "bbox_px": [
+      1814,
+      215,
+      106,
+      14
+    ],
+    "surface_type": "floor",
+    "predicted_class": "scuff or scratch mark",
+    "confidence": 0.553,
+    "world_xyz": [
+      -2.375735282897949,
+      -1.4877557754516602,
+      2.0531022548675537
+    ],
+    "frame_index": 1545
+  },
+  {
+    "bbox_px": [
+      1372,
+      79,
+      548,
+      37
+    ],
+    "surface_type": "floor",
+    "predicted_class": "scuff or scratch mark",
+    "confidence": 0.606,
+    "world_xyz": [
+      -2.794339179992676,
+      -1.4907660484313965,
+      1.8525713682174683
+    ],
+    "frame_index": 1560
+  },
+  {
+    "bbox_px": [
+      443,
+      330,
+      10,
+      255
+    ],
+    "surface_type": "floor",
+    "predicted_class": "scuff or scratch mark",
+    "confidence": 0.501,
+    "world_xyz": [
+      -6.436181545257568,
+      -1.4608126878738403,
+      1.0620830059051514
+    ],
+    "frame_index": 1560
+  },
+  {
+    "bbox_px": [
+      1870,
+      894,
+      32,
+      116
+    ],
+    "surface_type": "floor",
+    "predicted_class": "scuff or scratch mark",
+    "confidence": 0.606,
+    "world_xyz": [
+      -2.7366833686828613,
+      -1.4946550130844116,
+      2.6434154510498047
+    ],
+    "frame_index": 1560
+  },
+  {
+    "bbox_px": [
+      420,
+      8,
+      54,
+      285
+    ],
+    "surface_type": "floor",
+    "predicted_class": "scuff or scratch mark",
+    "confidence": 0.52,
+    "world_xyz": [
+      -6.427030563354492,
+      -1.496315360069275,
+      1.1467317342758179
+    ],
+    "frame_index": 1575
+  },
+  {
+    "bbox_px": [
+      1824,
+      0,
+      59,
+      82
+    ],
+    "surface_type": "floor",
+    "predicted_class": "scuff or scratch mark",
+    "confidence": 0.553,
+    "world_xyz": [
+      -3.1608922481536865,
+      -1.4848331212997437,
+      2.151575803756714
+    ],
+    "frame_index": 1590
+  },
+  {
+    "bbox_px": [
+      1219,
+      522,
+      50,
+      439
+    ],
+    "surface_type": "floor",
+    "predicted_class": "scuff or scratch mark",
+    "confidence": 0.573,
+    "world_xyz": [
+      -1.3394861221313477,
+      -1.4674482345581055,
+      2.8989357948303223
+    ],
+    "frame_index": 1665
+  },
+  {
+    "bbox_px": [
+      428,
+      571,
+      22,
+      193
+    ],
+    "surface_type": "floor",
+    "predicted_class": "scuff or scratch mark",
+    "confidence": 0.546,
+    "world_xyz": [
+      0.725270688533783,
+      -1.456367015838623,
+      4.125051975250244
+    ],
+    "frame_index": 1665
+  },
+  {
+    "bbox_px": [
+      1268,
+      1130,
+      46,
+      310
+    ],
+    "surface_type": "floor",
+    "predicted_class": "scuff or scratch mark",
+    "confidence": 0.535,
+    "world_xyz": [
+      -1.0966010093688965,
+      -1.4585150480270386,
+      2.341310501098633
+    ],
+    "frame_index": 1665
+  },
+  {
+    "bbox_px": [
+      641,
+      103,
+      28,
+      136
+    ],
+    "surface_type": "floor",
+    "predicted_class": "scuff or scratch mark",
+    "confidence": 0.577,
+    "world_xyz": [
+      -0.10298598557710648,
+      -1.4935306310653687,
+      3.9122252464294434
+    ],
+    "frame_index": 1680
+  },
+  {
+    "bbox_px": [
+      504,
+      157,
+      24,
+      76
+    ],
+    "surface_type": "floor",
+    "predicted_class": "scuff or scratch mark",
+    "confidence": 0.514,
+    "world_xyz": [
+      0.4787155091762543,
+      -1.4985193014144897,
+      4.186452865600586
+    ],
+    "frame_index": 1680
+  },
+  {
+    "bbox_px": [
+      387,
+      331,
+      39,
+      44
+    ],
+    "surface_type": "wall",
+    "predicted_class": "scuff or scratch mark",
+    "confidence": 0.56,
+    "world_xyz": [
+      0.8676000237464905,
+      -1.3484479188919067,
+      3.985729932785034
+    ],
+    "frame_index": 1680
+  },
+  {
+    "bbox_px": [
+      533,
+      358,
+      63,
+      27
+    ],
+    "surface_type": "floor",
+    "predicted_class": "scuff or scratch mark",
+    "confidence": 0.521,
+    "world_xyz": [
+      0.3751465082168579,
+      -1.4847500324249268,
+      3.7273199558258057
+    ],
+    "frame_index": 1680
+  },
+  {
+    "bbox_px": [
+      535,
+      64,
+      23,
+      66
+    ],
+    "surface_type": "floor",
+    "predicted_class": "scuff or scratch mark",
+    "confidence": 0.528,
+    "world_xyz": [
+      0.44151604175567627,
+      -1.4869199991226196,
+      4.1547465324401855
+    ],
+    "frame_index": 1695
+  },
+  {
+    "bbox_px": [
+      658,
+      171,
+      39,
+      127
+    ],
+    "surface_type": "floor",
+    "predicted_class": "scuff or scratch mark",
+    "confidence": 0.555,
+    "world_xyz": [
+      -0.012317340821027756,
+      -1.4858239889144897,
+      3.641472101211548
+    ],
+    "frame_index": 1695
+  },
+  {
+    "bbox_px": [
+      589,
+      275,
+      32,
+      24
+    ],
+    "surface_type": "floor",
+    "predicted_class": "scuff or scratch mark",
+    "confidence": 0.514,
+    "world_xyz": [
+      0.2726934254169464,
+      -1.4844993352890015,
+      3.6659438610076904
+    ],
+    "frame_index": 1695
+  },
+  {
+    "bbox_px": [
+      601,
+      295,
+      32,
+      24
+    ],
+    "surface_type": "floor",
+    "predicted_class": "scuff or scratch mark",
+    "confidence": 0.511,
+    "world_xyz": [
+      0.2890428304672241,
+      -1.4802589416503906,
+      3.664534330368042
+    ],
+    "frame_index": 1710
+  },
+  {
+    "bbox_px": [
+      743,
+      437,
+      20,
+      30
+    ],
+    "surface_type": "floor",
+    "predicted_class": "scuff or scratch mark",
+    "confidence": 0.501,
+    "world_xyz": [
+      -0.11427481472492218,
+      -1.4908596277236938,
+      3.218050003051758
+    ],
+    "frame_index": 1710
+  },
+  {
+    "bbox_px": [
+      1125,
+      617,
+      79,
+      40
+    ],
+    "surface_type": "floor",
+    "predicted_class": "scuff or scratch mark",
+    "confidence": 0.518,
+    "world_xyz": [
+      -1.0540456771850586,
+      -1.4757637977600098,
+      2.6384658813476562
+    ],
+    "frame_index": 1710
+  }
+]

@@ -1,0 +1,575 @@
+{
+  "scan_dir": "/Users/muskangupta/Documents/M/Code/cozmo-ai/Assignment/c00a170fe1",
+  "frames_scanned": 115,
+  "frames_with_damage": [
+    {
+      "frame_index": 0,
+      "classes_found": [
+        "scuff or scratch mark"
+      ],
+      "detection_count": 1
+    },
+    {
+      "frame_index": 15,
+      "classes_found": [
+        "scuff or scratch mark"
+      ],
+      "detection_count": 2
+    },
+    {
+      "frame_index": 30,
+      "classes_found": [
+        "scuff or scratch mark"
+      ],
+      "detection_count": 1
+    },
+    {
+      "frame_index": 45,
+      "classes_found": [
+        "scuff or scratch mark"
+      ],
+      "detection_count": 1
+    },
+    {
+      "frame_index": 60,
+      "classes_found": [
+        "scuff or scratch mark"
+      ],
+      "detection_count": 2
+    },
+    {
+      "frame_index": 90,
+      "classes_found": [
+        "scuff or scratch mark"
+      ],
+      "detection_count": 1
+    },
+    {
+      "frame_index": 105,
+      "classes_found": [
+        "scuff or scratch mark"
+      ],
+      "detection_count": 1
+    },
+    {
+      "frame_index": 120,
+      "classes_found": [
+        "scuff or scratch mark"
+      ],
+      "detection_count": 1
+    },
+    {
+      "frame_index": 150,
+      "classes_found": [
+        "scuff or scratch mark"
+      ],
+      "detection_count": 1
+    },
+    {
+      "frame_index": 165,
+      "classes_found": [
+        "scuff or scratch mark"
+      ],
+      "detection_count": 1
+    },
+    {
+      "frame_index": 300,
+      "classes_found": [
+        "scuff or scratch mark"
+      ],
+      "detection_count": 1
+    },
+    {
+      "frame_index": 315,
+      "classes_found": [
+        "scuff or scratch mark"
+      ],
+      "detection_count": 1
+    },
+    {
+      "frame_index": 330,
+      "classes_found": [
+        "scuff or scratch mark"
+      ],
+      "detection_count": 3
+    },
+    {
+      "frame_index": 345,
+      "classes_found": [
+        "scuff or scratch mark"
+      ],
+      "detection_count": 3
+    },
+    {
+      "frame_index": 360,
+      "classes_found": [
+        "scuff or scratch mark"
+      ],
+      "detection_count": 2
+    },
+    {
+      "frame_index": 405,
+      "classes_found": [
+        "scuff or scratch mark"
+      ],
+      "detection_count": 2
+    },
+    {
+      "frame_index": 420,
+      "classes_found": [
+        "scuff or scratch mark"
+      ],
+      "detection_count": 1
+    },
+    {
+      "frame_index": 435,
+      "classes_found": [
+        "scuff or scratch mark"
+      ],
+      "detection_count": 2
+    },
+    {
+      "frame_index": 450,
+      "classes_found": [
+        "scuff or scratch mark"
+      ],
+      "detection_count": 1
+    },
+    {
+      "frame_index": 480,
+      "classes_found": [
+        "scuff or scratch mark"
+      ],
+      "detection_count": 1
+    },
+    {
+      "frame_index": 495,
+      "classes_found": [
+        "scuff or scratch mark"
+      ],
+      "detection_count": 1
+    },
+    {
+      "frame_index": 510,
+      "classes_found": [
+        "scuff or scratch mark"
+      ],
+      "detection_count": 1
+    },
+    {
+      "frame_index": 525,
+      "classes_found": [
+        "scuff or scratch mark"
+      ],
+      "detection_count": 2
+    },
+    {
+      "frame_index": 540,
+      "classes_found": [
+        "scuff or scratch mark"
+      ],
+      "detection_count": 2
+    },
+    {
+      "frame_index": 555,
+      "classes_found": [
+        "scuff or scratch mark"
+      ],
+      "detection_count": 2
+    },
+    {
+      "frame_index": 600,
+      "classes_found": [
+        "scuff or scratch mark"
+      ],
+      "detection_count": 2
+    },
+    {
+      "frame_index": 615,
+      "classes_found": [
+        "scuff or scratch mark"
+      ],
+      "detection_count": 4
+    },
+    {
+      "frame_index": 630,
+      "classes_found": [
+        "scuff or scratch mark"
+      ],
+      "detection_count": 1
+    },
+    {
+      "frame_index": 645,
+      "classes_found": [
+        "scuff or scratch mark"
+      ],
+      "detection_count": 1
+    },
+    {
+      "frame_index": 660,
+      "classes_found": [
+        "scuff or scratch mark"
+      ],
+      "detection_count": 2
+    },
+    {
+      "frame_index": 675,
+      "classes_found": [
+        "scuff or scratch mark"
+      ],
+      "detection_count": 3
+    },
+    {
+      "frame_index": 690,
+      "classes_found": [
+        "scuff or scratch mark"
+      ],
+      "detection_count": 2
+    },
+    {
+      "frame_index": 705,
+      "classes_found": [
+        "scuff or scratch mark"
+      ],
+      "detection_count": 1
+    },
+    {
+      "frame_index": 720,
+      "classes_found": [
+        "scuff or scratch mark"
+      ],
+      "detection_count": 1
+    },
+    {
+      "frame_index": 735,
+      "classes_found": [
+        "scuff or scratch mark"
+      ],
+      "detection_count": 3
+    },
+    {
+      "frame_index": 750,
+      "classes_found": [
+        "scuff or scratch mark"
+      ],
+      "detection_count": 2
+    },
+    {
+      "frame_index": 765,
+      "classes_found": [
+        "scuff or scratch mark"
+      ],
+      "detection_count": 1
+    },
+    {
+      "frame_index": 780,
+      "classes_found": [
+        "scuff or scratch mark"
+      ],
+      "detection_count": 1
+    },
+    {
+      "frame_index": 825,
+      "classes_found": [
+        "scuff or scratch mark"
+      ],
+      "detection_count": 1
+    },
+    {
+      "frame_index": 870,
+      "classes_found": [
+        "scuff or scratch mark"
+      ],
+      "detection_count": 1
+    },
+    {
+      "frame_index": 885,
+      "classes_found": [
+        "scuff or scratch mark"
+      ],
+      "detection_count": 1
+    },
+    {
+      "frame_index": 915,
+      "classes_found": [
+        "scuff or scratch mark"
+      ],
+      "detection_count": 3
+    },
+    {
+      "frame_index": 930,
+      "classes_found": [
+        "scuff or scratch mark"
+      ],
+      "detection_count": 1
+    },
+    {
+      "frame_index": 975,
+      "classes_found": [
+        "scuff or scratch mark"
+      ],
+      "detection_count": 1
+    },
+    {
+      "frame_index": 990,
+      "classes_found": [
+        "scuff or scratch mark"
+      ],
+      "detection_count": 3
+    },
+    {
+      "frame_index": 1005,
+      "classes_found": [
+        "scuff or scratch mark"
+      ],
+      "detection_count": 3
+    },
+    {
+      "frame_index": 1020,
+      "classes_found": [
+        "scuff or scratch mark"
+      ],
+      "detection_count": 4
+    },
+    {
+      "frame_index": 1035,
+      "classes_found": [
+        "scuff or scratch mark"
+      ],
+      "detection_count": 3
+    },
+    {
+      "frame_index": 1050,
+      "classes_found": [
+        "scuff or scratch mark"
+      ],
+      "detection_count": 1
+    },
+    {
+      "frame_index": 1065,
+      "classes_found": [
+        "scuff or scratch mark"
+      ],
+      "detection_count": 2
+    },
+    {
+      "frame_index": 1080,
+      "classes_found": [
+        "scuff or scratch mark"
+      ],
+      "detection_count": 1
+    },
+    {
+      "frame_index": 1095,
+      "classes_found": [
+        "scuff or scratch mark"
+      ],
+      "detection_count": 2
+    },
+    {
+      "frame_index": 1140,
+      "classes_found": [
+        "scuff or scratch mark"
+      ],
+      "detection_count": 1
+    },
+    {
+      "frame_index": 1170,
+      "classes_found": [
+        "scuff or scratch mark"
+      ],
+      "detection_count": 1
+    },
+    {
+      "frame_index": 1185,
+      "classes_found": [
+        "scuff or scratch mark"
+      ],
+      "detection_count": 3
+    },
+    {
+      "frame_index": 1200,
+      "classes_found": [
+        "scuff or scratch mark"
+      ],
+      "detection_count": 5
+    },
+    {
+      "frame_index": 1215,
+      "classes_found": [
+        "scuff or scratch mark"
+      ],
+      "detection_count": 5
+    },
+    {
+      "frame_index": 1230,
+      "classes_found": [
+        "scuff or scratch mark"
+      ],
+      "detection_count": 5
+    },
+    {
+      "frame_index": 1260,
+      "classes_found": [
+        "scuff or scratch mark"
+      ],
+      "detection_count": 1
+    },
+    {
+      "frame_index": 1275,
+      "classes_found": [
+        "scuff or scratch mark"
+      ],
+      "detection_count": 1
+    },
+    {
+      "frame_index": 1305,
+      "classes_found": [
+        "scuff or scratch mark"
+      ],
+      "detection_count": 2
+    },
+    {
+      "frame_index": 1320,
+      "classes_found": [
+        "scuff or scratch mark"
+      ],
+      "detection_count": 3
+    },
+    {
+      "frame_index": 1395,
+      "classes_found": [
+        "scuff or scratch mark"
+      ],
+      "detection_count": 2
+    },
+    {
+      "frame_index": 1410,
+      "classes_found": [
+        "scuff or scratch mark"
+      ],
+      "detection_count": 2
+    },
+    {
+      "frame_index": 1425,
+      "classes_found": [
+        "scuff or scratch mark"
+      ],
+      "detection_count": 3
+    },
+    {
+      "frame_index": 1440,
+      "classes_found": [
+        "scuff or scratch mark"
+      ],
+      "detection_count": 4
+    },
+    {
+      "frame_index": 1455,
+      "classes_found": [
+        "scuff or scratch mark"
+      ],
+      "detection_count": 7
+    },
+    {
+      "frame_index": 1470,
+      "classes_found": [
+        "scuff or scratch mark"
+      ],
+      "detection_count": 2
+    },
+    {
+      "frame_index": 1485,
+      "classes_found": [
+        "scuff or scratch mark"
+      ],
+      "detection_count": 2
+    },
+    {
+      "frame_index": 1500,
+      "classes_found": [
+        "scuff or scratch mark"
+      ],
+      "detection_count": 3
+    },
+    {
+      "frame_index": 1515,
+      "classes_found": [
+        "scuff or scratch mark"
+      ],
+      "detection_count": 1
+    },
+    {
+      "frame_index": 1530,
+      "classes_found": [
+        "scuff or scratch mark"
+      ],
+      "detection_count": 1
+    },
+    {
+      "frame_index": 1545,
+      "classes_found": [
+        "scuff or scratch mark"
+      ],
+      "detection_count": 2
+    },
+    {
+      "frame_index": 1560,
+      "classes_found": [
+        "scuff or scratch mark"
+      ],
+      "detection_count": 3
+    },
+    {
+      "frame_index": 1575,
+      "classes_found": [
+        "scuff or scratch mark"
+      ],
+      "detection_count": 1
+    },
+    {
+      "frame_index": 1590,
+      "classes_found": [
+        "scuff or scratch mark"
+      ],
+      "detection_count": 1
+    },
+    {
+      "frame_index": 1665,
+      "classes_found": [
+        "scuff or scratch mark"
+      ],
+      "detection_count": 3
+    },
+    {
+      "frame_index": 1680,
+      "classes_found": [
+        "scuff or scratch mark"
+      ],
+      "detection_count": 4
+    },
+    {
+      "frame_index": 1695,
+      "classes_found": [
+        "scuff or scratch mark"
+      ],
+      "detection_count": 3
+    },
+    {
+      "frame_index": 1710,
+      "classes_found": [
+        "scuff or scratch mark"
+      ],
+      "detection_count": 3
+    }
+  ],
+  "damage_classes_considered": [
+    "water stain",
+    "mold",
+    "crack",
+    "hole or puncture damage",
+    "peeling or bubbling paint",
+    "scuff or scratch mark"
+  ],
+  "confidence_note": "Placeholder damage-class vocabulary, not matched to real staged damage yet. No dedup across frames -- the same real damage seen in multiple frames appears as multiple entries here. CLIP classification (open_clip, ViT-B-32-quickgelu, openai weights) is the only filter on classical color-anomaly region proposals; not validated against ground truth."
+}
